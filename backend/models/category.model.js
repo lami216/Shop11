@@ -19,6 +19,10 @@ const categorySchema = new mongoose.Schema(
                         type: String,
                         required: true,
                 },
+                imageFileId: {
+                        type: String,
+                        default: null,
+                },
                 imagePublicId: {
                         type: String,
                         default: null,
