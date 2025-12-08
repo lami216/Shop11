@@ -335,6 +335,8 @@ const CreateProductForm = () => {
                 const { existing, fresh } = buildOrderedImages();
 
                 try {
+                        const newImagesData = fresh.map((image) => image.dataUrl);
+
                         if (isEditing && selectedProduct) {
                                 await updateProduct(selectedProduct._id, {
                                         name: fieldValidation.trimmedName,
@@ -342,7 +344,7 @@ const CreateProductForm = () => {
                                         price: fieldValidation.numericPrice,
                                         category: formState.category,
                                         existingImages: existing.map((image) => image.public_id).filter(Boolean),
-                                        newImages: fresh,
+                                        newImages: newImagesData,
                                         cover: {
                                                 source: formState.coverSource,
                                                 index: formState.coverIndex,
@@ -357,7 +359,7 @@ const CreateProductForm = () => {
                                         description: fieldValidation.trimmedDescription,
                                         price: fieldValidation.numericPrice,
                                         category: formState.category,
-                                        images: fresh,
+                                        images: newImagesData,
                                         isDiscounted: hasDiscountToggle,
                                         discountPercentage: normalizedDiscount,
                                 });
@@ -377,9 +379,9 @@ const CreateProductForm = () => {
                 })),
                 ...formState.newImages.map((image, index) => ({
                         type: "new",
-                        url: image,
+                        url: image.dataUrl,
                         index,
-                        key: `${image}-${index}`,
+                        key: `${image.dataUrl}-${index}`,
                 })),
         ];
 
