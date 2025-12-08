@@ -6,6 +6,7 @@ import useTranslation from "../hooks/useTranslation";
 import { useProductStore } from "../stores/useProductStore";
 import { useCategoryStore } from "../stores/useCategoryStore";
 import { formatMRU } from "../lib/formatMRU";
+import { compressImageFile, MAX_COMPRESSED_IMAGE_SIZE } from "../lib/imageCompression";
 
 const MAX_IMAGES = 3;
 
@@ -21,14 +22,6 @@ const createInitialFormState = () => ({
         coverSource: "existing",
         coverIndex: 0,
 });
-
-const readFileAsDataURL = (file) =>
-        new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-        });
 
 const validateProductFormFields = (state, totalImages, t) => {
         const trimmedName = state.name.trim();
@@ -153,7 +146,11 @@ const CreateProductForm = () => {
                 if (!files.length) return;
 
                 try {
-                        const base64Images = await Promise.all(files.map(readFileAsDataURL));
+                        const compressedImages = await Promise.all(
+                                files.map((file) =>
+                                        compressImageFile(file, { maxSizeBytes: MAX_COMPRESSED_IMAGE_SIZE })
+                                )
+                        );
                         setFormState((previous) => {
                                 const remainingSlots =
                                         MAX_IMAGES - (previous.existingImages.length + previous.newImages.length);
@@ -165,9 +162,9 @@ const CreateProductForm = () => {
                                         return previous;
                                 }
 
-                                const acceptedImages = base64Images.slice(0, remainingSlots);
+                                const acceptedImages = compressedImages.slice(0, remainingSlots);
 
-                                if (base64Images.length > remainingSlots) {
+                                if (compressedImages.length > remainingSlots) {
                                         toast.error(
                                                 t("admin.createProduct.messages.imagesRemaining", { count: remainingSlots })
                                         );

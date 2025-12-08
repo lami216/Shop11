@@ -8,7 +8,6 @@ const CategoryItem = ({ category }) => {
                 <div className='group relative h-96 w-full overflow-hidden rounded-xl shadow-lg ring-1 ring-white/10'>
                         <Link to={`/category/${category.slug}`}>
                                 <div className='w-full h-full cursor-pointer'>
-                                        <div className='absolute inset-0 z-10 bg-gradient-to-b from-transparent via-payzone-navy/40 to-payzone-navy/90 transition-opacity duration-500 group-hover:opacity-90' />
                                         <img
                                                 src={category.imageUrl}
                                                 alt={category.name}
