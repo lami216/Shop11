@@ -8,6 +8,14 @@ const readFileAsDataURL = (file) =>
                 reader.readAsDataURL(file);
         });
 
+const blobToDataUrl = (blob) =>
+        new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(typeof reader.result === "string" ? reader.result : "");
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+        });
+
 const loadImageFromDataUrl = (dataUrl) =>
         new Promise((resolve, reject) => {
                 const image = new Image();
@@ -15,11 +23,6 @@ const loadImageFromDataUrl = (dataUrl) =>
                 image.onerror = reject;
                 image.src = dataUrl;
         });
-
-const calculateDataUrlSize = (dataUrl) => {
-        const base64 = dataUrl.split(",")[1] ?? "";
-        return Math.ceil((base64.length * 3) / 4);
-};
 
 const getScaledDimensions = (width, height, maxWidth, maxHeight) => {
         const widthScale = maxWidth ? maxWidth / width : 1;
@@ -32,7 +35,7 @@ const getScaledDimensions = (width, height, maxWidth, maxHeight) => {
         };
 };
 
-const drawToCanvas = (image, width, height, quality) => {
+const renderToCanvasBlob = async (image, width, height, mimeType, quality) => {
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
@@ -40,16 +43,30 @@ const drawToCanvas = (image, width, height, quality) => {
         const context = canvas.getContext("2d");
         context.drawImage(image, 0, 0, width, height);
 
-        return canvas.toDataURL("image/jpeg", quality);
+        const dataUrl = canvas.toDataURL(mimeType, quality);
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+
+        return { blob, dataUrl };
+};
+
+const updateFileExtension = (fileName, mimeType) => {
+        const extension = mimeType === "image/webp" ? "webp" : mimeType === "image/png" ? "png" : "jpg";
+        if (!fileName) return `compressed.${extension}`;
+
+        const lastDotIndex = fileName.lastIndexOf(".");
+        if (lastDotIndex === -1) return `${fileName}.${extension}`;
+        return `${fileName.substring(0, lastDotIndex)}.${extension}`;
 };
 
 export const compressImageFile = async (file, options = {}) => {
         const {
                 maxSizeBytes = MAX_COMPRESSED_IMAGE_SIZE,
-                maxWidth = 1920,
-                maxHeight = 1920,
-                initialQuality = 0.7,
-                minQuality = 0.4,
+                maxWidth = 1200,
+                maxHeight = 1200,
+                initialQuality = 0.8,
+                minQuality = 0.5,
+                mimeType = "image/jpeg",
         } = options;
 
         const originalDataUrl = await readFileAsDataURL(file);
@@ -57,32 +74,46 @@ export const compressImageFile = async (file, options = {}) => {
 
         let { width, height } = getScaledDimensions(image.width, image.height, maxWidth, maxHeight);
         let quality = initialQuality;
-        let compressedDataUrl = drawToCanvas(image, width, height, quality);
-
-        const withinLimit = () => calculateDataUrlSize(compressedDataUrl) <= maxSizeBytes;
-
         let attempts = 0;
-        while (!withinLimit() && attempts < 10) {
-                if (quality > minQuality) {
-                        quality = Math.max(minQuality, quality - 0.1);
-                } else {
-                        width = Math.max(400, Math.floor(width * 0.9));
-                        height = Math.max(400, Math.floor(height * 0.9));
+        let lastResult = null;
+
+        while (attempts < 12) {
+                const result = await renderToCanvasBlob(image, width, height, mimeType, quality);
+                lastResult = result;
+
+                if (result.blob.size <= maxSizeBytes) {
+                        break;
                 }
 
-                compressedDataUrl = drawToCanvas(image, width, height, quality);
+                if (quality > minQuality + 0.05) {
+                        quality = Math.max(minQuality, quality - 0.1);
+                } else {
+                        width = Math.max(300, Math.floor(width * 0.9));
+                        height = Math.max(300, Math.floor(height * 0.9));
+                        quality = Math.max(minQuality, quality - 0.05);
+                }
+
                 attempts += 1;
         }
 
-        if (!withinLimit()) {
-                compressedDataUrl = drawToCanvas(image, Math.max(200, Math.floor(width * 0.8)), Math.max(200, Math.floor(height * 0.8)), minQuality);
-        }
-
-        if (!withinLimit()) {
+        if (!lastResult || lastResult.blob.size > maxSizeBytes) {
                 throw new Error("Unable to compress image below the size limit.");
         }
 
-        return compressedDataUrl;
+        const compressedFile = new File([lastResult.blob], updateFileExtension(file.name, mimeType), {
+                type: mimeType,
+                lastModified: Date.now(),
+        });
+
+        const dataUrl = await blobToDataUrl(lastResult.blob);
+
+        return {
+                file: compressedFile,
+                dataUrl,
+                size: lastResult.blob.size,
+                width,
+                height,
+        };
 };
 
-export { calculateDataUrlSize, MAX_COMPRESSED_IMAGE_SIZE };
+export { MAX_COMPRESSED_IMAGE_SIZE };

@@ -23,7 +23,8 @@ const CategoryManager = () => {
                 () => ({
                         name: "",
                         description: "",
-                        image: "",
+                        imageFile: null,
+                        imageDataUrl: "",
                         imagePreview: "",
                         imageChanged: false,
                 }),
@@ -45,7 +46,8 @@ const CategoryManager = () => {
                 setFormState({
                         name: selectedCategory.name ?? "",
                         description: selectedCategory.description ?? "",
-                        image: "",
+                        imageFile: null,
+                        imageDataUrl: "",
                         imagePreview: selectedCategory.imageUrl ?? "",
                         imageChanged: false,
                 });
@@ -62,8 +64,9 @@ const CategoryManager = () => {
 
                         setFormState((previous) => ({
                                 ...previous,
-                                image: compressedImage,
-                                imagePreview: compressedImage,
+                                imageFile: compressedImage.file,
+                                imageDataUrl: compressedImage.dataUrl,
+                                imagePreview: compressedImage.dataUrl,
                                 imageChanged: true,
                         }));
                 } catch (error) {
@@ -89,7 +92,7 @@ const CategoryManager = () => {
                         return;
                 }
 
-                if (!selectedCategory && !formState.image) {
+                if (!selectedCategory && !formState.imageDataUrl) {
                         toast.error(t("categories.manager.form.imageRequired"));
                         return;
                 }
@@ -99,8 +102,8 @@ const CategoryManager = () => {
                         description: trimmedDescription,
                 };
 
-                if (formState.image && (formState.imageChanged || !selectedCategory)) {
-                        payload.image = formState.image;
+                if (formState.imageDataUrl && (formState.imageChanged || !selectedCategory)) {
+                        payload.image = formState.imageDataUrl;
                 }
 
                 try {

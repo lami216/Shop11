@@ -49,7 +49,7 @@ const ProductCard = ({ product }) => {
                                                 className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-110'
                                                 src={coverImage}
                                                 alt={product.name}
-                                                style={{ filter: "none" }}
+                                                style={{ filter: "none", opacity: 1, mixBlendMode: "normal" }}
                                         />
                                 ) : (
                                         <div className='flex h-full w-full items-center justify-center bg-payzone-navy/70 text-sm text-payzone-white/80'>
