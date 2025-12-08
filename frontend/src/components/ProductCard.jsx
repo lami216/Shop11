@@ -51,7 +51,7 @@ const ProductCard = ({ product }) => {
                                                 alt={product.name}
                                         />
                                 ) : (
-                                        <div className='flex h-full w-full items-center justify-center bg-payzone-navy/70 text-sm text-white/60'>
+                                        <div className='flex h-full w-full items-center justify-center bg-payzone-navy/70 text-sm text-payzone-white/80'>
                                                 {t("common.status.noImage")}
                                         </div>
                                 )}
@@ -60,12 +60,12 @@ const ProductCard = ({ product }) => {
 
                         <div className='mt-4 flex flex-1 flex-col px-5 pb-5'>
                                 <Link to={`/products/${product._id}`} className='block transition-colors duration-300 hover:text-payzone-gold'>
-                                        <h5 className='text-lg font-semibold tracking-tight text-white'>{product.name}</h5>
+                                        <h5 className='text-lg font-semibold tracking-tight text-payzone-white'>{product.name}</h5>
                                 </Link>
                                 <div className='mt-3 flex flex-wrap items-baseline gap-2'>
                                         {isDiscounted ? (
                                                 <>
-                                                        <span className='max-w-full break-words text-sm text-white/60 line-through'>{formatMRU(price)}</span>
+                                                        <span className='max-w-full break-words text-sm text-payzone-white/70 line-through'>{formatMRU(price)}</span>
                                                         <span className='max-w-full break-words text-lg font-bold text-red-300'>{formatMRU(discountedPrice)}</span>
                                                 </>
                                         ) : (

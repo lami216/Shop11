@@ -21,7 +21,7 @@ const HomePage = () => {
 
         return (
                 <div className='relative min-h-screen overflow-hidden text-payzone-white'>
-                        <div className='relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8'>
+                        <div className='relative z-10 mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 sm:pt-20 lg:px-8'>
                                 <div className='mx-auto mb-6 flex w-fit items-center gap-2 rounded-full bg-bilady-yellow/30 px-5 py-2 text-sm font-semibold text-payzone-white shadow-sm'>
                                         <span className='h-2 w-2 rounded-full bg-payzone-gold' />
                                         {t("home.badge")}
