@@ -3,6 +3,7 @@ import { ImagePlus, Trash2, Edit3, X, Save } from "lucide-react";
 import toast from "react-hot-toast";
 import useTranslation from "../hooks/useTranslation";
 import { useCategoryStore } from "../stores/useCategoryStore";
+import { compressImageFile, MAX_COMPRESSED_IMAGE_SIZE } from "../lib/imageCompression";
 
 const CategoryManager = () => {
         const {
@@ -50,22 +51,27 @@ const CategoryManager = () => {
                 });
         }, [selectedCategory, createEmptyForm]);
 
-        const handleImageChange = (event) => {
+        const handleImageChange = async (event) => {
                 const file = event.target.files?.[0];
                 if (!file) return;
 
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                        const result = typeof reader.result === "string" ? reader.result : "";
+                try {
+                        const compressedImage = await compressImageFile(file, {
+                                maxSizeBytes: MAX_COMPRESSED_IMAGE_SIZE,
+                        });
+
                         setFormState((previous) => ({
                                 ...previous,
-                                image: result,
-                                imagePreview: result,
+                                image: compressedImage,
+                                imagePreview: compressedImage,
                                 imageChanged: true,
                         }));
-                };
-                reader.readAsDataURL(file);
-                event.target.value = "";
+                } catch (error) {
+                        console.error("Category image compression failed", error);
+                        toast.error("تعذر ضغط الصورة. يرجى المحاولة بصورة أخرى.");
+                } finally {
+                        event.target.value = "";
+                }
         };
 
         const resetForm = () => {
