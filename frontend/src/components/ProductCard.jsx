@@ -60,7 +60,7 @@ const ProductCard = ({ product }) => {
 
                         <div className='mt-4 flex flex-1 flex-col px-5 pb-5'>
                                 <Link to={`/products/${product._id}`} className='block'>
-                                        <h5 className='text-lg font-semibold tracking-tight text-[#000000]'>
+                                        <h5 className='text-lg font-semibold tracking-tight' style={{ color: "#000000" }}>
                                                 {product.name}
                                         </h5>
                                 </Link>
