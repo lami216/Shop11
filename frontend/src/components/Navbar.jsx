@@ -28,7 +28,7 @@ const Navbar = () => {
 
         return (
                 <header className='fixed top-0 right-0 w-full border-b border-payzone-indigo/30 bg-payzone-navy/90 backdrop-blur-xl shadow-lg transition-all duration-300 z-40'>
-                        <div className='container mx-auto px-4 py-3'>
+                        <div className='container mx-auto px-4 py-2 sm:py-3'>
                                 <div className='flex flex-wrap items-center justify-between gap-4'>
                                         <Link to='/' className='flex items-center gap-3 text-payzone-white'>
                                                 <img

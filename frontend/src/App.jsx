@@ -47,7 +47,7 @@ function App() {
 
         return (
                 <div className='relative min-h-screen bg-gradient-to-b from-payzone-navy via-white to-bilady-yellow/20 text-payzone-white'>
-                        <div className='relative z-50 pt-20'>
+                        <div className='relative z-50 pt-24 sm:pt-20'>
                                 <Navbar />
                                 <Routes>
                                         <Route path='/' element={<HomePage />} />

@@ -89,11 +89,11 @@ const FeaturedProducts = ({ featuredProducts }) => {
                                                                                                 />
                                                                                         </div>
                                                                                         <div className='p-4'>
-                                                                                                <h3 className='mb-2 text-lg font-semibold text-white'>{product.name}</h3>
+                                                                                                <h3 className='mb-2 text-lg font-semibold text-payzone-white'>{product.name}</h3>
                                                                                                 <div className='mb-4 flex flex-wrap items-baseline gap-2'>
                                                                                                         {isDiscounted ? (
                                                                                                                 <>
-                                                                                                                        <span className='max-w-full break-words text-sm text-white/60 line-through'>
+                                                                                                                        <span className='max-w-full break-words text-sm text-payzone-white/70 line-through'>
                                                                                                                                 {formatMRU(price)}
                                                                                                                         </span>
                                                                                                                         <span className='max-w-full break-words text-lg font-bold text-red-300'>
@@ -125,7 +125,7 @@ const FeaturedProducts = ({ featuredProducts }) => {
                                                 disabled={isStartDisabled}
                                                 className={`absolute top-1/2 -right-4 flex -translate-y-1/2 transform items-center justify-center rounded-full p-2 transition-colors duration-300 ${
                                                         isStartDisabled
-                                                                ? "cursor-not-allowed bg-white/10 text-white/40"
+                                                                ? "cursor-not-allowed bg-white/10 text-payzone-white/60"
                                                                 : "bg-payzone-indigo text-white hover:bg-[#3b3ad6]"
                                                 }`}
                                         >
@@ -137,7 +137,7 @@ const FeaturedProducts = ({ featuredProducts }) => {
                                                 disabled={isEndDisabled}
                                                 className={`absolute top-1/2 -left-4 flex -translate-y-1/2 transform items-center justify-center rounded-full p-2 transition-colors duration-300 ${
                                                         isEndDisabled
-                                                                ? "cursor-not-allowed bg-white/10 text-white/40"
+                                                                ? "cursor-not-allowed bg-white/10 text-payzone-white/60"
                                                                 : "bg-payzone-indigo text-white hover:bg-[#3b3ad6]"
                                                 }`}
                                         >
