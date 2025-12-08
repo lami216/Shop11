@@ -85,10 +85,10 @@ const ProductDetailPage = () => {
 
         if (!selectedProduct) {
                 return (
-                        <div className='relative min-h-screen text-payzone-white'>
+                        <div className='relative min-h-screen text-black'>
                                 <div className='relative z-10 mx-auto max-w-4xl px-4 py-24 text-center'>
                                         <h1 className='text-3xl font-semibold text-payzone-gold'>{t("products.detail.notFound.title")}</h1>
-                                        <p className='mt-4 text-white/70'>{t("products.detail.notFound.description")}</p>
+                                        <p className='mt-4 text-black'>{t("products.detail.notFound.description")}</p>
                                 </div>
                         </div>
                 );
@@ -119,13 +119,13 @@ const ProductDetailPage = () => {
         };
 
         return (
-                <div className='relative min-h-screen overflow-hidden text-payzone-white'>
+                <div className='relative min-h-screen overflow-hidden text-black'>
                         <div className='relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8'>
                                 <div className='grid gap-10 lg:grid-cols-2'>
                                         <div>
                                                 <div className='relative flex h-96 items-center justify-center overflow-hidden rounded-2xl border border-payzone-indigo/40 bg-payzone-navy/60'>
                                                         {isDiscounted && (
-                                                                <span className='absolute right-4 top-4 rounded-full bg-red-600 px-4 py-1 text-sm font-semibold text-white shadow-lg'>
+                                                                <span className='absolute right-4 top-4 rounded-full bg-red-600 px-4 py-1 text-sm font-semibold text-black shadow-lg'>
                                                                         -{discountPercentage}%
                                                                 </span>
                                                         )}
@@ -136,7 +136,7 @@ const ProductDetailPage = () => {
                                                                         className='h-full w-full object-contain'
                                                                 />
                                                         ) : (
-                                                                <div className='text-white/60'>{t("common.status.noImage")}</div>
+                                                                <div className='text-black'>{t("common.status.noImage")}</div>
                                                         )}
                                                 </div>
                                                 {galleryImages.length > 1 && (
@@ -172,23 +172,23 @@ const ProductDetailPage = () => {
                                                                 </p>
                                                         )}
                                                         <div className='space-y-2'>
-                                                                <p className='text-sm font-semibold text-white/70'>الإسم</p>
-                                                                <h1 className='text-3xl font-bold text-payzone-gold'>
+                                                                <p className='text-sm font-semibold text-black'>الإسم</p>
+                                                                <h1 className='text-3xl font-bold text-black'>
                                                                         {selectedProduct.name}
                                                                 </h1>
                                                         </div>
                                                         <div className='space-y-2'>
-                                                                <p className='text-sm font-semibold text-white/70'>السعر</p>
-                                                                <div className='flex flex-wrap items-center gap-4 text-3xl font-semibold text-payzone-gold'>
+                                                                <p className='text-sm font-semibold text-black'>السعر</p>
+                                                                <div className='flex flex-wrap items-center gap-4 text-3xl font-semibold text-black'>
                                                                         {isDiscounted ? (
                                                                                 <>
-                                                                                        <span className='text-2xl font-normal text-white/60 line-through'>
+                                                                                        <span className='text-2xl font-normal text-black line-through'>
                                                                                                 {formatMRU(price)}
                                                                                         </span>
-                                                                                        <span className='text-4xl font-bold text-red-300'>
+                                                                                        <span className='text-4xl font-bold text-black'>
                                                                                                 {formatMRU(discountedPrice)}
                                                                                         </span>
-                                                                                        <span className='rounded-full bg-red-600/80 px-3 py-1 text-base font-semibold text-white shadow'>
+                                                                                        <span className='rounded-full bg-red-600/80 px-3 py-1 text-base font-semibold text-black shadow'>
                                                                                                 -{discountPercentage}%
                                                                                         </span>
                                                                                 </>
@@ -199,26 +199,26 @@ const ProductDetailPage = () => {
                                                         </div>
                                                 </div>
 
-                                                <div className='flex flex-wrap items-center gap-3 text-white/80'>
-                                                        <span className='text-sm font-medium text-white/70'>
+                                                <div className='flex flex-wrap items-center gap-3 text-black'>
+                                                        <span className='text-sm font-medium text-black'>
                                                                 {t("cart.item.chooseQuantity")}
                                                         </span>
                                                         <div className='flex items-center gap-3'>
                                                                 <button
                                                                         type='button'
                                                                         onClick={handleDecreaseQuantity}
-                                                                        className='inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:border-payzone-gold/80 hover:bg-payzone-navy/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-payzone-gold'
+                                                                        className='inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-black transition hover:border-payzone-gold/80 hover:bg-payzone-navy/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-payzone-gold'
                                                                         aria-label={t("cart.item.decrease")}
                                                                 >
                                                                         <Minus className='h-4 w-4' />
                                                                 </button>
-                                                                <span className='flex h-9 min-w-[3rem] items-center justify-center rounded-xl bg-white/10 text-base font-semibold text-white'>
+                                                                <span className='flex h-9 min-w-[3rem] items-center justify-center rounded-xl bg-white/10 text-base font-semibold text-black'>
                                                                         {quantity}
                                                                 </span>
                                                                 <button
                                                                         type='button'
                                                                         onClick={handleIncreaseQuantity}
-                                                                        className='inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:border-payzone-gold/80 hover:bg-payzone-navy/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-payzone-gold'
+                                                                        className='inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-black transition hover:border-payzone-gold/80 hover:bg-payzone-navy/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-payzone-gold'
                                                                         aria-label={t("cart.item.increase")}
                                                                 >
                                                                         <Plus className='h-4 w-4' />
@@ -226,8 +226,8 @@ const ProductDetailPage = () => {
                                                         </div>
                                                 </div>
 
-                                                <div className='space-y-3 text-white/80'>
-                                                        <h2 className='text-lg font-semibold text-payzone-gold'>
+                                                <div className='space-y-3 text-black'>
+                                                        <h2 className='text-lg font-semibold text-black'>
                                                                 {t("products.detail.descriptionTitle")}
                                                         </h2>
                                                         <p className='text-base leading-relaxed'>

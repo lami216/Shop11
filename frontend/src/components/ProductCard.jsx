@@ -60,7 +60,9 @@ const ProductCard = ({ product }) => {
 
                         <div className='mt-4 flex flex-1 flex-col px-5 pb-5'>
                                 <Link to={`/products/${product._id}`} className='block'>
-                                        <h5 className='text-lg font-semibold tracking-tight text-[#000]'>{product.name}</h5>
+                                        <h5 className='text-lg font-semibold tracking-tight text-[#000000]'>
+                                                {product.name}
+                                        </h5>
                                 </Link>
                                 <div className='mt-3 flex flex-wrap items-baseline gap-2'>
                                         {isDiscounted ? (
