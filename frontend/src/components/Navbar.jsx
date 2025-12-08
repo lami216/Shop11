@@ -14,12 +14,12 @@ const Navbar = () => {
         const cartLink = (
                 <Link
                         to={'/cart'}
-                        className='relative group flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-payzone-white transition duration-300 ease-in-out hover:bg-white'
+                        className='relative group flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-black transition duration-300 ease-in-out hover:bg-white'
                 >
                         <ShoppingCart size={18} className='text-payzone-indigo' />
                         <span className='hidden sm:inline'>{t("nav.cart")}</span>
                         {cartItemCount > 0 && (
-                                <span className='absolute -top-2 -right-2 rounded-full bg-bilady-yellow px-2 py-0.5 text-xs font-semibold text-payzone-white shadow-sm transition duration-300 ease-in-out'>
+                                <span className='absolute -top-2 -right-2 rounded-full bg-bilady-yellow px-2 py-0.5 text-xs font-semibold text-black shadow-sm transition duration-300 ease-in-out'>
                                         {cartItemCount}
                                 </span>
                         )}
@@ -30,7 +30,7 @@ const Navbar = () => {
                 <header className='fixed top-0 right-0 w-full border-b border-payzone-indigo/30 bg-payzone-navy/90 backdrop-blur-xl shadow-lg transition-all duration-300 z-40'>
                         <div className='container mx-auto px-4 py-2 sm:py-3'>
                                 <div className='flex flex-wrap items-center justify-between gap-4'>
-                                        <Link to='/' className='flex items-center gap-3 text-payzone-white'>
+                                        <Link to='/' className='flex items-center gap-3 text-black'>
                                                 <img
                                                         src='/bilady-logo.svg'
                                                         alt='شعار Bilady'
@@ -43,7 +43,7 @@ const Navbar = () => {
                                                 <nav className='flex items-center gap-4'>
                                                         <Link
                                                                 to={'/'}
-                                                                className='text-payzone-white/80 transition duration-300 ease-in-out hover:text-payzone-indigo'
+                                                                className='text-black transition duration-300 ease-in-out hover:text-payzone-indigo'
                                                         >
                                                                 {t("nav.home")}
                                                         </Link>
@@ -62,7 +62,7 @@ const Navbar = () => {
                                                         {cartLink}
                                                         {user ? (
                                                                 <button
-                                                                        className='flex items-center gap-2 rounded-full bg-payzone-indigo/10 px-4 py-2 text-payzone-white transition duration-300 ease-in-out hover:bg-payzone-indigo/20'
+                                                                        className='flex items-center gap-2 rounded-full bg-payzone-indigo/10 px-4 py-2 text-black transition duration-300 ease-in-out hover:bg-payzone-indigo/20'
                                                                         onClick={logout}
                                                                 >
                                                                         <LogOut size={18} />

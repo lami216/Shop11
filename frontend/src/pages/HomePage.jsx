@@ -20,19 +20,19 @@ const HomePage = () => {
         }, [fetchCategories]);
 
         return (
-                <div className='relative min-h-screen overflow-hidden text-payzone-white'>
+                <div className='relative min-h-screen overflow-hidden text-black'>
                         <div className='relative z-10 mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 sm:pt-20 lg:px-8'>
-                                <div className='mx-auto mb-6 flex w-fit items-center gap-2 rounded-full bg-bilady-yellow/30 px-5 py-2 text-sm font-semibold text-payzone-white shadow-sm'>
+                                <div className='mx-auto mb-6 flex w-fit items-center gap-2 rounded-full bg-bilady-yellow/30 px-5 py-2 text-sm font-semibold text-black shadow-sm'>
                                         <span className='h-2 w-2 rounded-full bg-payzone-gold' />
                                         {t("home.badge")}
                                 </div>
                                 <h1 className='mb-4 text-center text-5xl font-bold sm:text-6xl'>
-                                        <span className='block text-payzone-white'>{t("home.titleLine1")}</span>
+                                        <span className='block text-black'>{t("home.titleLine1")}</span>
                                         <span className='bg-gradient-to-r from-payzone-gold via-bilady-yellow to-payzone-indigo bg-clip-text text-transparent'>
                                                 {t("home.titleHighlight")}
                                         </span>
                                 </h1>
-                                <p className='mb-12 text-center text-lg text-payzone-white/80'>
+                                <p className='mb-12 text-center text-lg text-black'>
                                         {t("home.subtitle")}
                                 </p>
 

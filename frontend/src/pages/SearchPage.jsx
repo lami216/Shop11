@@ -53,7 +53,7 @@ const SearchPage = () => {
                                         )}
 
                                         {!loading && hasSearched && results.length === 0 && !error && (
-                                                <div className='rounded-3xl border border-white/10 bg-payzone-navy p-6 text-center text-lg text-payzone-white/70'>
+                                                <div className='rounded-3xl border border-white/10 bg-payzone-navy p-6 text-center text-lg text-black'>
                                                         {query.trim()
                                                                 ? t("search.noResults", { query })
                                                                 : t("common.status.noProducts")}
@@ -69,7 +69,7 @@ const SearchPage = () => {
                                         )}
 
                                         {!loading && !hasSearched && !error && (
-                                                <div className='rounded-3xl border border-white/10 bg-payzone-navy p-6 text-center text-payzone-white/70'>
+                                                <div className='rounded-3xl border border-white/10 bg-payzone-navy p-6 text-center text-black'>
                                                         {t("search.placeholder")}
                                                 </div>
                                         )}

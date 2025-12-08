@@ -52,7 +52,7 @@ const ProductCard = ({ product }) => {
                                                 style={{ filter: "none", opacity: 1, mixBlendMode: "normal" }}
                                         />
                                 ) : (
-                                        <div className='flex h-full w-full items-center justify-center bg-payzone-navy/70 text-sm text-payzone-white/80'>
+                                        <div className='flex h-full w-full items-center justify-center bg-payzone-navy/70 text-sm text-black'>
                                                 {t("common.status.noImage")}
                                         </div>
                                 )}
@@ -67,7 +67,7 @@ const ProductCard = ({ product }) => {
                                 <div className='mt-3 flex flex-wrap items-baseline gap-2'>
                                         {isDiscounted ? (
                                                 <>
-                                                        <span className='max-w-full break-words text-sm text-payzone-white/70 line-through'>{formatMRU(price)}</span>
+                                                        <span className='max-w-full break-words text-sm text-black line-through'>{formatMRU(price)}</span>
                                                         <span className='max-w-full break-words text-lg font-bold text-red-300'>{formatMRU(discountedPrice)}</span>
                                                 </>
                                         ) : (

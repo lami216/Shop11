@@ -124,7 +124,7 @@ const PurchaseSuccessPage = () => {
                 : "شكرًا لاختيارك متجرنا. سنتواصل معك للتحقق من تفاصيل العنوان.";
 
         return (
-                <div className='min-h-screen bg-payzone-navy px-4 py-10 text-payzone-white sm:py-16' dir='rtl'>
+                <div className='min-h-screen bg-payzone-navy px-4 py-10 text-black sm:py-16' dir='rtl'>
                         <div className='mx-auto w-full max-w-4xl'>
                                 <div className='h-5 sm:h-7' aria-hidden='true' />
                                 <section className='rounded-3xl bg-white/95 p-6 shadow-xl ring-1 ring-black/5 sm:p-10'>
@@ -133,7 +133,7 @@ const PurchaseSuccessPage = () => {
                                                         <CheckCircle className='h-6 w-6' />
                                                 </span>
                                                 <h1 className='mt-4 text-3xl font-bold sm:text-4xl'>{heading}</h1>
-                                                <p className='mt-3 max-w-2xl text-base text-payzone-white/70 sm:text-lg'>{description}</p>
+                                                <p className='mt-3 max-w-2xl text-base text-black sm:text-lg'>{description}</p>
                                         </div>
 
                                         <div className='mt-6 flex justify-center'>
@@ -149,13 +149,13 @@ const PurchaseSuccessPage = () => {
 
                                         {orderDetails?.orderNumber && (
                                                 <div className='mt-6 flex justify-center'>
-                                                        <div className='rounded-2xl border border-payzone-gold/40 bg-payzone-gold/10 px-6 py-3 text-center text-payzone-white shadow-sm'>
-                                                                <div className='text-sm font-semibold text-payzone-white'>
+                                                        <div className='rounded-2xl border border-payzone-gold/40 bg-payzone-gold/10 px-6 py-3 text-center text-black shadow-sm'>
+                                                                <div className='text-sm font-semibold text-black'>
                                                                         {t("purchase.success.details.orderNumberLabel", {
                                                                                 orderNumber: formatNumberEn(orderDetails.orderNumber),
                                                                         })}
                                                                 </div>
-                                                                <div className='mt-1 text-xs text-payzone-white/80'>
+                                                                <div className='mt-1 text-xs text-black'>
                                                                         {t("purchase.success.details.orderTotalLabel", {
                                                                                 amount: formatMRU(totalAmount),
                                                                         })}
@@ -168,34 +168,34 @@ const PurchaseSuccessPage = () => {
                                                 {orderDetails ? (
                                                         <>
                                                                 <div className='rounded-2xl border border-payzone-navy/10 bg-white p-5 shadow-sm sm:p-6'>
-                                                                <div className='text-sm font-semibold text-payzone-white/60'>
+                                                                <div className='text-sm font-semibold text-black'>
                                                                                 {t("purchase.success.details.customer")}
                                                                         </div>
                                                                         <div className='mt-4 space-y-3 text-right text-base font-medium'>
                                                                                 <div className='flex items-baseline justify-between gap-4'>
-                                                                                        <span className='text-payzone-white/60'>
+                                                                                        <span className='text-black'>
                                                                                                 {t("purchase.success.details.name")}
                                                                                         </span>
-                                                                                        <span className='flex-1 text-left text-payzone-white'>{orderDetails?.customerName || "-"}</span>
+                                                                                        <span className='flex-1 text-left text-black'>{orderDetails?.customerName || "-"}</span>
                                                                                 </div>
                                                                                 <div className='flex items-baseline justify-between gap-4'>
-                                                                                        <span className='text-payzone-white/60'>
+                                                                                        <span className='text-black'>
                                                                                                 {t("purchase.success.details.phone")}
                                                                                         </span>
-                                                                                        <span className='flex-1 text-left text-payzone-white'>{orderDetails?.phone || "-"}</span>
+                                                                                        <span className='flex-1 text-left text-black'>{orderDetails?.phone || "-"}</span>
                                                                                 </div>
                                                                                 <div className='flex items-baseline justify-between gap-4'>
-                                                                                        <span className='text-payzone-white/60'>
+                                                                                        <span className='text-black'>
                                                                                                 {t("purchase.success.details.address")}
                                                                                         </span>
-                                                                                        <span className='flex-1 text-left text-payzone-white'>{orderDetails?.address || "-"}</span>
+                                                                                        <span className='flex-1 text-left text-black'>{orderDetails?.address || "-"}</span>
                                                                                 </div>
                                                                         </div>
                                                                 </div>
 
                                                                 <div className='overflow-hidden rounded-2xl border border-payzone-indigo/15 bg-white shadow-sm'>
                                                                         <table className='min-w-full border-collapse text-right text-sm sm:text-base'>
-                                                                                <thead className='bg-payzone-navy/50 text-payzone-white/80'>
+                                                                                <thead className='bg-payzone-navy/50 text-black'>
                                                                                         <tr>
                                                                                                 <th scope='col' className='px-4 py-3 font-medium'>
                                                                                                         {t("purchase.success.details.image")}
@@ -214,7 +214,7 @@ const PurchaseSuccessPage = () => {
                                                                                                 </th>
                                                                                         </tr>
                                                                                 </thead>
-                                                                                <tbody className='text-payzone-white'>
+                                                                                <tbody className='text-black'>
                                                                                         {storedItems.length > 0 ? (
                                                                                                 storedItems.map((item) => {
                                                                                                         const {
@@ -254,14 +254,14 @@ const PurchaseSuccessPage = () => {
                                                                                                                         <td className='px-4 py-4 align-middle text-left font-semibold'>
                                                                                                                                 {formatNumberEn(item.quantity || 0)}
                                                                                                                         </td>
-                                                                                                                        <td className='px-4 py-4 align-middle text-left text-payzone-white/80'>
+                                                                                                                        <td className='px-4 py-4 align-middle text-left text-black'>
                                                                                                                                 <div className='flex flex-col items-start'>
                                                                                                                                         {isDiscounted && (
-                    <span className='text-xs text-payzone-white/60 line-through'>
+                    <span className='text-xs text-black line-through'>
                                                                                                                                                         {formatMRU(originalPrice)}
                                                                                                                                                 </span>
                                                                                                                                         )}
-            <span className='font-semibold text-payzone-white'>
+            <span className='font-semibold text-black'>
                                                                                                                                                 {formatMRU(discountedPrice)}
                                                                                                                                         </span>
                                                                                                                                 </div>
@@ -274,7 +274,7 @@ const PurchaseSuccessPage = () => {
                                                                                                 })
                                                                                         ) : (
                                                                                                 <tr>
-                                                                                                        <td colSpan={5} className='px-4 py-6 text-center text-payzone-white/60'>
+                                                                                                        <td colSpan={5} className='px-4 py-6 text-center text-black'>
                                                                                                                 {t("purchase.success.details.empty")}
                                                                                                         </td>
                                                                                                 </tr>
@@ -284,18 +284,18 @@ const PurchaseSuccessPage = () => {
                                                                 </div>
 
                                                                 <div className='rounded-2xl border border-payzone-navy/15 bg-white p-5 shadow-sm sm:p-6'>
-                                                                        <div className='flex items-center justify-between text-base text-payzone-white/80'>
+                                                                        <div className='flex items-center justify-between text-base text-black'>
                                                                                 <span>{t("purchase.success.details.countLabel")}</span>
-                                                                                <span className='text-lg font-semibold text-payzone-white'>{formatNumberEn(totalCount)}</span>
+                                                                                <span className='text-lg font-semibold text-black'>{formatNumberEn(totalCount)}</span>
                                                                         </div>
-                                                                        <div className='mt-3 flex items-center justify-between border-t border-payzone-indigo/10 pt-3 text-base text-payzone-white/80'>
+                                                                        <div className='mt-3 flex items-center justify-between border-t border-payzone-indigo/10 pt-3 text-base text-black'>
                                                                                 <span>{t("purchase.success.details.grandTotalLabel")}</span>
-                                                                                <span className='text-lg font-semibold text-payzone-white'>{formatMRU(totalAmount)}</span>
+                                                                                <span className='text-lg font-semibold text-black'>{formatMRU(totalAmount)}</span>
                                                                         </div>
                                                                 </div>
                                                         </>
                                                 ) : (
-                                                        <div className='rounded-2xl border border-payzone-indigo/15 bg-white p-6 text-center text-payzone-white/80'>
+                                                        <div className='rounded-2xl border border-payzone-indigo/15 bg-white p-6 text-center text-black'>
                                                                 {t("purchase.success.noDetails")}
                                                         </div>
                                                 )}
