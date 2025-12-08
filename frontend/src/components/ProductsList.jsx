@@ -54,7 +54,7 @@ const ProductsList = ({ onEdit }) => {
                                                         <th
                                                                 key={heading}
                                                                 scope='col'
-                                                                className='px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-white/70'
+                                                                className='px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-black'
                                                         >
                                                                 {heading}
                                                         </th>
@@ -71,14 +71,14 @@ const ProductsList = ({ onEdit }) => {
                                                                                 <img className='h-full w-full object-cover' src={product.image} alt={product.name} />
                                                                         </div>
                                                                         <div>
-                                                                                <div className='text-sm font-medium text-white'>{product.name}</div>
+                                                                                <div className='text-sm font-medium text-black'>{product.name}</div>
                                                                         </div>
                                                                 </div>
                                                         </td>
                                                         <td className='whitespace-nowrap px-6 py-4'>
                                                                 <div className='flex flex-col items-end text-sm'>
                                                                         {product.isDiscounted && product.discountPercentage > 0 ? (
-                                                                                <span className='text-xs text-white/60 line-through'>
+                                                                                <span className='text-xs text-black line-through'>
                                                                                         {formatMRU(product.price)}
                                                                                 </span>
                                                                         ) : (
@@ -99,19 +99,19 @@ const ProductsList = ({ onEdit }) => {
                                                                                 </span>
                                                                         </div>
                                                                 ) : (
-                                                                        <span className='text-sm text-white/60'>—</span>
+                                                                        <span className='text-sm text-black'>—</span>
                                                                 )}
                                                         </td>
                                                         <td className='whitespace-nowrap px-6 py-4'>
-                                                                <div className='text-sm text-white/70'>{product.category}</div>
+                                                                <div className='text-sm text-black'>{product.category}</div>
                                                         </td>
                                                         <td className='whitespace-nowrap px-6 py-4'>
                                                                 <button
                                                                         onClick={() => toggleFeaturedProduct(product._id)}
                                                                         className={`rounded-full p-1 transition-colors duration-200 ${
                                                                                 product.isFeatured
-                                                                                        ? "bg-payzone-gold text-white"
-                                                                                        : "bg-payzone-navy/60 text-white/70"
+                                                                                        ? "bg-payzone-gold text-black"
+                                                                                        : "bg-payzone-navy/60 text-black"
                                                                         } hover:ring-2 hover:ring-payzone-indigo/40`}
                                                                 >
                                                                         <Star className='h-5 w-5' />
@@ -121,7 +121,7 @@ const ProductsList = ({ onEdit }) => {
                                                                 <div className='flex items-center justify-end gap-4'>
                                                                         <button
                                                                                 onClick={() => handleEdit(product)}
-                                                                                className='inline-flex items-center text-white/80 transition-colors duration-200 hover:text-payzone-gold'
+                                                                                className='inline-flex items-center text-black transition-colors duration-200 hover:text-payzone-gold'
                                                                         >
                                                                                 <Edit3 className='h-5 w-5' />
                                                                         </button>
