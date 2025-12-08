@@ -100,7 +100,7 @@ const CategoryPage = () => {
                                 )}
 
                                 {showSearchEmptyState && (
-                                        <div className='mb-6 rounded-3xl border border-white/10 bg-payzone-navy p-6 text-center text-lg text-payzone-white/70'>
+                                        <div className='mb-6 rounded-3xl border border-white/10 bg-payzone-navy p-6 text-center text-lg text-black'>
                                                 {t("search.noResults", { query: searchQuery.trim() })}
                                         </div>
                                 )}

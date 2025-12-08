@@ -376,7 +376,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                                         onChange={handleChange}
                                                         ref={inputRef}
                                                         placeholder={t("search.placeholder")}
-                                                        className='w-full rounded-2xl border border-transparent bg-payzone-navy/60 py-3 pr-12 pl-4 text-base text-payzone-white placeholder:text-payzone-white/60 focus:border-payzone-gold focus:outline-none focus:ring-2 focus:ring-payzone-indigo/60'
+                                                        className='w-full rounded-2xl border border-transparent bg-payzone-navy/60 py-3 pr-12 pl-4 text-base text-black placeholder:text-black focus:border-payzone-gold focus:outline-none focus:ring-2 focus:ring-payzone-indigo/60'
                                                 />
                                                 {query && (
                                                         <button
@@ -393,7 +393,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                         <div className='flex flex-row items-center gap-2 self-end sm:self-auto'>
                                                 <button
                                                         type='submit'
-                                                        className='flex items-center gap-2 rounded-2xl bg-gradient-to-r from-payzone-gold to-payzone-indigo px-5 py-3 text-sm font-semibold text-payzone-white shadow-md transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-80'
+                                                        className='flex items-center gap-2 rounded-2xl bg-gradient-to-r from-payzone-gold to-payzone-indigo px-5 py-3 text-sm font-semibold text-black shadow-md transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-80'
                                                         disabled={searching}
                                                 >
                                                         {searching ? (
@@ -406,7 +406,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                                 <button
                                                         type='button'
                                                         onClick={handleToggleCategories}
-                                                        className='flex items-center gap-2 rounded-2xl border border-payzone-indigo/40 bg-payzone-navy/70 px-5 py-3 text-sm font-semibold text-payzone-gold transition hover:border-payzone-gold/60 hover:text-payzone-white'
+                                                        className='flex items-center gap-2 rounded-2xl border border-payzone-indigo/40 bg-payzone-navy/70 px-5 py-3 text-sm font-semibold text-payzone-gold transition hover:border-payzone-gold/60 hover:text-black'
                                                 >
                                                         <Grid3x3 className='h-5 w-5' />
                                                         <span>
@@ -433,7 +433,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                         )}
 
                                         {!searching && !error && results.length === 0 && query.trim() && (
-                                                <div className='rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-payzone-white/70'>
+                                                <div className='rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-black'>
                                                         {t("search.noResults", { query })}
                                                 </div>
                                         )}
@@ -459,23 +459,23 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                                                                                                 className='h-full w-full object-cover transition duration-300 group-hover:scale-105'
                                                                                                         />
                                                                                                 ) : (
-                                                                                                        <div className='flex h-full w-full items-center justify-center text-payzone-white/60'>
+                                                                                                        <div className='flex h-full w-full items-center justify-center text-black'>
                                                                                                                 <SearchIcon className='h-6 w-6' />
                                                                                                         </div>
                                                                                                 )}
                                                                                         </div>
                                                                                         <div className='flex flex-1 flex-col items-start gap-1 text-right'>
-                                                                                                <span className='text-base font-semibold text-payzone-white'>
+                                                                                                <span className='text-base font-semibold text-black'>
                                                                                                         {product.name}
                                                                                                 </span>
-                                                                                                <p className='line-clamp-2 text-sm text-payzone-white/60'>
+                                                                                                <p className='line-clamp-2 text-sm text-black'>
                                                                                                         {product.description}
                                                                                                 </p>
                                                                                         </div>
                                                                                         <div className='flex flex-col items-end gap-1'>
                                                                                                 {isDiscounted ? (
                                                                                                         <>
-                                                                                                                <span className='text-xs text-payzone-white/60 line-through'>
+                                                                                                                <span className='text-xs text-black line-through'>
                                                                                                                         {formatMRU(price)}
                                                                                                                 </span>
                                                                                                                 <span className='text-sm font-semibold text-payzone-gold'>
@@ -507,7 +507,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                         </div>
 
                                         {!categoriesLoading && categories.length === 0 && (
-                                                <div className='rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-payzone-white/70'>
+                                                <div className='rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-black'>
                                                         {t("search.categoriesEmpty")}
                                                 </div>
                                         )}
@@ -530,7 +530,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                                                         <button
                                                                                 type='button'
                                                                                 onClick={() => handleSelectCategory(category)}
-                                                                                className='flex w-full items-center justify-between gap-3 rounded-2xl border border-transparent bg-white/5 p-4 text-sm font-semibold text-payzone-white transition hover:border-payzone-gold/50 hover:bg-white/10'
+                                                                                className='flex w-full items-center justify-between gap-3 rounded-2xl border border-transparent bg-white/5 p-4 text-sm font-semibold text-black transition hover:border-payzone-gold/50 hover:bg-white/10'
                                                                         >
                                                                                 <span>{category.name}</span>
                                                                         </button>
