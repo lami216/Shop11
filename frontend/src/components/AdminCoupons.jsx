@@ -416,7 +416,7 @@ const AdminCoupons = () => {
                                         <button
                                                 type='button'
                                                 onClick={openCreateForm}
-                                                className='flex items-center justify-center gap-2 rounded-lg bg-payzone-gold px-4 py-2 font-semibold text-payzone-navy shadow transition hover:bg-yellow-400'
+                                                className='flex items-center justify-center gap-2 rounded-lg bg-payzone-gold px-4 py-2 font-semibold text-white shadow transition hover:bg-yellow-400'
                                         >
                                                 <PlusCircle className='h-5 w-5' />
                                                 {t("admin.coupons.addButton")}
@@ -631,7 +631,7 @@ const AdminCoupons = () => {
                                                                 </button>
                                                                 <button
                                                                         type='submit'
-                                                                        className='flex items-center gap-2 rounded-lg bg-payzone-gold px-4 py-2 text-sm font-semibold text-payzone-navy transition hover:bg-yellow-400 disabled:opacity-60'
+                                                                        className='flex items-center gap-2 rounded-lg bg-payzone-gold px-4 py-2 text-sm font-semibold text-white transition hover:bg-yellow-400 disabled:opacity-60'
                                                                         disabled={mutationLoading}
                                                                 >
                                                                         {mutationLoading && <Loader2 className='h-4 w-4 animate-spin' />}

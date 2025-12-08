@@ -108,7 +108,7 @@ const FeaturedProducts = ({ featuredProducts }) => {
                                                                                                 </div>
                                                                                                 <button
                                                                                                         onClick={() => addToCart(enrichedProduct)}
-                                                                                                        className='flex w-full items-center justify-center gap-2 rounded bg-payzone-gold py-2 px-4 font-semibold text-payzone-navy transition-colors duration-300 hover:bg-[#b8873d]'
+                                                                                                        className='flex w-full items-center justify-center gap-2 rounded bg-payzone-gold py-2 px-4 font-semibold text-white transition-colors duration-300 hover:bg-[#b81f1f]'
                                                                                                 >
                                                                                                         <ShoppingCart className='h-5 w-5' />
                                                                                                         {t("common.actions.addToCart")}
