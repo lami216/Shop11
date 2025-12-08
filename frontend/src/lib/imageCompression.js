@@ -48,16 +48,12 @@ export const compressImageFile = async (file, options = {}) => {
                 maxSizeBytes = MAX_COMPRESSED_IMAGE_SIZE,
                 maxWidth = 1920,
                 maxHeight = 1920,
-                initialQuality = 0.9,
-                minQuality = 0.5,
+                initialQuality = 0.7,
+                minQuality = 0.4,
         } = options;
 
         const originalDataUrl = await readFileAsDataURL(file);
         const image = await loadImageFromDataUrl(originalDataUrl);
-
-        if (file.size <= maxSizeBytes && calculateDataUrlSize(originalDataUrl) <= maxSizeBytes) {
-                return originalDataUrl;
-        }
 
         let { width, height } = getScaledDimensions(image.width, image.height, maxWidth, maxHeight);
         let quality = initialQuality;

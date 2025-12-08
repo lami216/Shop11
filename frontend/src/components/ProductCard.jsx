@@ -33,7 +33,7 @@ const ProductCard = ({ product }) => {
         };
 
         return (
-                <div className='group relative flex w-full flex-col overflow-hidden rounded-xl border border-payzone-indigo/30 bg-white/5 shadow-lg transition-all duration-300 hover:border-payzone-gold/60 hover:shadow-xl sm:aspect-[3/4] lg:aspect-square'>
+                <div className='group relative flex w-full flex-col overflow-hidden rounded-xl border border-payzone-indigo/30 shadow-lg transition-all duration-300 hover:border-payzone-gold/60 hover:shadow-xl sm:aspect-[3/4] lg:aspect-square'>
                         <Link
                                 to={`/products/${product._id}`}
                                 className='relative aspect-[4/5] w-full overflow-hidden min-h-[14rem] sm:min-h-0 sm:aspect-square'
@@ -49,6 +49,7 @@ const ProductCard = ({ product }) => {
                                                 className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-110'
                                                 src={coverImage}
                                                 alt={product.name}
+                                                style={{ filter: "none" }}
                                         />
                                 ) : (
                                         <div className='flex h-full w-full items-center justify-center bg-payzone-navy/70 text-sm text-payzone-white/80'>
@@ -58,8 +59,8 @@ const ProductCard = ({ product }) => {
                         </Link>
 
                         <div className='mt-4 flex flex-1 flex-col px-5 pb-5'>
-                                <Link to={`/products/${product._id}`} className='block transition-colors duration-300 hover:text-payzone-gold'>
-                                        <h5 className='text-lg font-semibold tracking-tight text-black'>{product.name}</h5>
+                                <Link to={`/products/${product._id}`} className='block'>
+                                        <h5 className='text-lg font-semibold tracking-tight text-[#000]'>{product.name}</h5>
                                 </Link>
                                 <div className='mt-3 flex flex-wrap items-baseline gap-2'>
                                         {isDiscounted ? (
