@@ -308,7 +308,7 @@ const CheckoutPage = () => {
                                                 <motion.button
                                                         type='submit'
                                                         disabled={!isFormValid || isSubmitting}
-                                                        className='w-full rounded-lg bg-payzone-gold px-5 py-3 text-base font-semibold text-payzone-navy transition duration-300 hover:bg-[#b8873d] focus:outline-none focus:ring-4 focus:ring-payzone-indigo/40 disabled:cursor-not-allowed disabled:opacity-50'
+                                                        className='w-full rounded-lg bg-payzone-gold px-5 py-3 text-base font-semibold text-white transition duration-300 hover:bg-[#b81f1f] focus:outline-none focus:ring-4 focus:ring-payzone-indigo/40 disabled:cursor-not-allowed disabled:opacity-50'
                                                         whileHover={{ scale: 1.02 }}
                                                         whileTap={{ scale: 0.97 }}
                                                 >
