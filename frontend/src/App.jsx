@@ -19,6 +19,7 @@ import { useCartStore } from "./stores/useCartStore";
 import PurchaseSuccessPage from "./pages/PurchaseSuccessPage";
 import PurchaseCancelPage from "./pages/PurchaseCancelPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import OrderSuccessPage from "./pages/OrderSuccessPage";
 
 function App() {
         const user = useUserStore((state) => state.user);
@@ -62,6 +63,7 @@ function App() {
                                         <Route path='/search' element={<SearchPage />} />
                                         <Route path='/cart' element={<CartPage />} />
                                         <Route path='/checkout' element={<CheckoutPage />} />
+                                        <Route path='/order-success' element={<OrderSuccessPage />} />
                                         <Route path='/purchase-success' element={<PurchaseSuccessPage />} />
                                         <Route path='/purchase-cancel' element={<PurchaseCancelPage />} />
                                 </Routes>
