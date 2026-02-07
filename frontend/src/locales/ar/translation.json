@@ -273,6 +273,7 @@
                                 "invalidPrice": "يرجى إدخال سعر صالح.",
                                 "imagesLimit": "يمكنك رفع {{count}} صور كحد أقصى.",
                                 "imagesRemaining": "يمكن إضافة {{count}} صورة أخرى فقط.",
+                                "imagesMaxSize": "حجم الصورة بعد الضغط يجب ألا يتجاوز {{size}} ميغا.",
                                 "productCreated": "تم إنشاء المنتج بنجاح",
                                 "nameRequired": "يرجى إدخال اسم المنتج.",
                                 "descriptionRequired": "يرجى كتابة وصف للمنتج.",

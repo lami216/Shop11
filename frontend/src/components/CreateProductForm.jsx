@@ -151,6 +151,13 @@ const CreateProductForm = () => {
                                         compressImageFile(file, { maxSizeBytes: MAX_COMPRESSED_IMAGE_SIZE })
                                 )
                         );
+                        const validCompressedImages = compressedImages.filter(
+                                (image) => image.file.size <= MAX_COMPRESSED_IMAGE_SIZE
+                        );
+
+                        if (validCompressedImages.length !== compressedImages.length) {
+                                toast.error(t("admin.createProduct.messages.imagesMaxSize", { size: 10 }));
+                        }
                         setFormState((previous) => {
                                 const remainingSlots =
                                         MAX_IMAGES - (previous.existingImages.length + previous.newImages.length);
@@ -162,9 +169,9 @@ const CreateProductForm = () => {
                                         return previous;
                                 }
 
-                                const acceptedImages = compressedImages.slice(0, remainingSlots);
+                                const acceptedImages = validCompressedImages.slice(0, remainingSlots);
 
-                                if (compressedImages.length > remainingSlots) {
+                                if (validCompressedImages.length > remainingSlots) {
                                         toast.error(
                                                 t("admin.createProduct.messages.imagesRemaining", { count: remainingSlots })
                                         );

@@ -1,5 +1,5 @@
-// أقصى حجم للصورة بعد الضغط: 2MB
-const MAX_COMPRESSED_IMAGE_SIZE = 2 * 1024 * 1024;
+// أقصى حجم للصورة بعد الضغط: 10MB
+const MAX_COMPRESSED_IMAGE_SIZE = 10 * 1024 * 1024;
 
 // قراءة ملف كـ Data URL
 const readFileAsDataURL = (file) =>
