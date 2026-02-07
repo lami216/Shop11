@@ -22,7 +22,6 @@ const SHEET_HEADERS = [
         "Date",
         "Status",
         "TotalPrice",
-        "ItemsDetails",
 ];
 
 const normalizeString = (value) => (typeof value === "string" ? value.trim() : "");
@@ -102,16 +101,6 @@ const ensureSheetHeaders = async (sheetsClient, spreadsheetId, sheetName) => {
         });
 };
 
-const formatItemsDetails = (items) =>
-        JSON.stringify(
-                items.map((item) => ({
-                        productName: item.name,
-                        quantity: item.quantity,
-                        unitPrice: Number(item.price) || 0,
-                        lineTotal: Number(item.subtotal) || 0,
-                }))
-        );
-
 const appendOrderToSheet = async ({ customerName, phone, address, items, total, status }) => {
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         if (!spreadsheetId) {
@@ -131,7 +120,6 @@ const appendOrderToSheet = async ({ customerName, phone, address, items, total, 
                 new Date().toISOString(),
                 status,
                 Number(total) || 0,
-                formatItemsDetails(items),
         ];
 
         await sheetsClient.spreadsheets.values.append({
