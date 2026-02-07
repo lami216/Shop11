@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
@@ -18,29 +18,24 @@ const CheckoutPage = () => {
         const [address, setAddress] = useState("");
         const [whatsAppError, setWhatsAppError] = useState("");
         const [isSubmitting, setIsSubmitting] = useState(false);
+        const [submittedOrder, setSubmittedOrder] = useState(null);
         const { t } = useTranslation();
 
         useEffect(() => {
-                const hasPendingWhatsAppRedirect = sessionStorage.getItem("whatsappOrderSent");
-
-                if (cart.length === 0 && !hasPendingWhatsAppRedirect) {
+                if (cart.length === 0 && !submittedOrder) {
                         toast.error(t("common.messages.cartEmptyToast"));
                         navigate("/cart", { replace: true });
                 }
-        }, [cart, navigate, t]);
-
-        useEffect(() => {
-                const shouldRedirect = sessionStorage.getItem("whatsappOrderSent");
-
-                if (shouldRedirect) {
-                        sessionStorage.removeItem("whatsappOrderSent");
-                        navigate("/purchase-success", { replace: true });
-                }
-        }, [navigate]);
+        }, [cart, navigate, submittedOrder, t]);
 
         const normalizedWhatsAppNumber = whatsAppNumber.replaceAll(/\D/g, "");
         const isWhatsAppValid = /^\d{8,15}$/.test(normalizedWhatsAppNumber);
-        const isFormValid = customerName.trim() !== "" && address.trim() !== "" && cart.length > 0 && isWhatsAppValid;
+        const isFormValid =
+                customerName.trim() !== "" &&
+                address.trim() !== "" &&
+                cart.length > 0 &&
+                isWhatsAppValid &&
+                !submittedOrder;
 
         const handleWhatsAppChange = (event) => {
                 const value = event.target.value;
@@ -60,19 +55,11 @@ const CheckoutPage = () => {
                 }
         };
 
-        const productsSummary = useMemo(
-                () =>
-                        cart.map((item, index) => {
-                                const { discountedPrice } = getProductPricing(item);
-                                const lineTotal = discountedPrice * item.quantity;
-                                const productIndex = formatNumberEn(index + 1);
-                                const quantity = formatNumberEn(item.quantity);
-                                return `${productIndex}. ${item.name} × ${quantity} = ${formatMRU(lineTotal)}`;
-                        }),
-                [cart]
-        );
-
-        const savings = Math.max(Number(totalDiscountAmount) || 0, subtotal - total, 0);
+        const displayItems = submittedOrder?.items ?? cart;
+        const displaySubtotal = submittedOrder?.summary?.subtotal ?? subtotal;
+        const displayTotal = submittedOrder?.summary?.total ?? total;
+        const displayDiscount = submittedOrder?.summary?.totalDiscountAmount ?? totalDiscountAmount;
+        const savings = Math.max(Number(displayDiscount) || 0, displaySubtotal - displayTotal, 0);
 
         const handleSubmit = async (event) => {
                 event.preventDefault();
@@ -142,8 +129,6 @@ const CheckoutPage = () => {
                         requestPayload.couponCode = coupon.code;
                 }
 
-                const STORE_WHATSAPP_NUMBER = "22231117700";
-
                 setIsSubmitting(true);
 
                 try {
@@ -175,69 +160,18 @@ const CheckoutPage = () => {
                                 },
                         };
 
-                        sessionStorage.setItem("lastOrderDetails", JSON.stringify(enrichedOrderDetails));
-                        sessionStorage.setItem("lastWhatsAppOrderId", orderId);
-
-                        const appliedSavings = Math.max(serverTotalDiscount, serverSubtotal - serverTotal, 0);
-
-                        const messageLines = [
-                                t("checkout.messages.newOrder", { name: baseOrderDetails.customerName }),
-                                t("checkout.messages.orderNumber", { number: formatNumberEn(orderNumber) }),
-                                t("checkout.messages.customerWhatsApp", { number: sanitizedPhone }),
-                                t("checkout.messages.address", { address: baseOrderDetails.address }),
-                                "",
-                                t("checkout.messages.productsHeader"),
-                                ...productsSummary,
-                        ];
-
-                        if (productsSummary.length === 0) {
-                                messageLines.push(t("checkout.messages.noProducts"));
-                        }
-
-                        if (serverCoupon?.code) {
-                                const discountPercentage = formatNumberEn(
-                                        Number(serverCoupon.discountPercentage) || 0
-                                );
-                                messageLines.push(
-                                        "",
-                                        t("checkout.messages.couponHeader"),
-                                        t("checkout.messages.coupon", {
-                                                code: serverCoupon.code,
-                                                discount: discountPercentage,
-                                        })
-                                );
-                        }
-
-                        if (appliedSavings > 0) {
-                                messageLines.push(
-                                        "",
-                                        t("checkout.messages.savings", { amount: formatMRU(appliedSavings) })
-                                );
-                        }
-
-                        messageLines.push(
-                                "",
-                                t("checkout.messages.total", { amount: formatMRU(serverTotal) }),
-                                "",
-                                t("checkout.messages.thanks")
-                        );
-
-                        const whatsappURL = new URL("https://wa.me/" + STORE_WHATSAPP_NUMBER);
-                        whatsappURL.searchParams.set("text", messageLines.join("\n"));
-
                         toast.success(t("checkout.messages.orderCreated"));
-
-                        const whatsappWindow = window.open(whatsappURL.toString(), "_blank");
-
-                        if (!whatsappWindow) {
-                                toast.error(t("common.messages.whatsAppOpenFailed"));
-                        }
-
-                        sessionStorage.setItem("whatsappOrderSent", "true");
-                        await clearCart();
-                        navigate("/purchase-success", {
-                                state: { orderType: "whatsapp", orderDetails: enrichedOrderDetails },
+                        setSubmittedOrder({
+                                ...enrichedOrderDetails,
+                                summary: {
+                                        ...enrichedOrderDetails.summary,
+                                        subtotal: serverSubtotal,
+                                        total: serverTotal,
+                                        coupon: serverCoupon,
+                                        totalDiscountAmount: Math.max(serverTotalDiscount, 0),
+                                },
                         });
+                        await clearCart();
                 } catch (error) {
                         console.error("Unable to process WhatsApp order", error);
                         const errorMessage =
@@ -258,6 +192,11 @@ const CheckoutPage = () => {
                                         transition={{ duration: 0.4 }}
                                 >
                                         <h1 className='mb-6 text-2xl font-bold text-payzone-gold'>{t("checkout.title")}</h1>
+                                        {submittedOrder && (
+                                                <div className='rounded-lg border border-payzone-gold/40 bg-payzone-gold/10 p-4 text-sm text-payzone-gold'>
+                                                        شكراً على تسوقك معنا. تم إرسال طلبك وسنتواصل معك قريباً.
+                                                </div>
+                                        )}
                                         <form className='space-y-5' onSubmit={handleSubmit}>
                                                 <div className='space-y-2'>
                                                         <label className='block text-sm font-medium text-white/80' htmlFor='customerName'>
@@ -268,6 +207,7 @@ const CheckoutPage = () => {
                                                                 type='text'
                                                                 value={customerName}
                                                                 onChange={(event) => setCustomerName(event.target.value)}
+                                                                disabled={Boolean(submittedOrder)}
                                                                 className='w-full rounded-lg border border-payzone-indigo/40 bg-payzone-navy/60 px-4 py-2 text-white placeholder-white/40 focus:border-payzone-gold focus:outline-none focus:ring-2 focus:ring-payzone-indigo'
                                                                 placeholder={t("checkout.form.fullNamePlaceholder")}
                                                                 required
@@ -283,6 +223,7 @@ const CheckoutPage = () => {
                                                                 type='tel'
                                                                 value={whatsAppNumber}
                                                                 onChange={handleWhatsAppChange}
+                                                                disabled={Boolean(submittedOrder)}
                                                                 className='w-full rounded-lg border border-payzone-indigo/40 bg-payzone-navy/60 px-4 py-2 text-white placeholder-white/40 focus:border-payzone-gold focus:outline-none focus:ring-2 focus:ring-payzone-indigo'
                                                                 placeholder={t("checkout.form.whatsAppPlaceholder")}
                                                                 required
@@ -299,6 +240,7 @@ const CheckoutPage = () => {
                                                                 value={address}
                                                                 onChange={(event) => setAddress(event.target.value)}
                                                                 rows={4}
+                                                                disabled={Boolean(submittedOrder)}
                                                                 className='w-full rounded-lg border border-payzone-indigo/40 bg-payzone-navy/60 px-4 py-2 text-white placeholder-white/40 focus:border-payzone-gold focus:outline-none focus:ring-2 focus:ring-payzone-indigo'
                                                                 placeholder={t("checkout.form.addressPlaceholder")}
                                                                 required
@@ -325,10 +267,13 @@ const CheckoutPage = () => {
                                 >
                                         <h2 className='text-xl font-semibold text-payzone-gold'>{t("checkout.summary.title")}</h2>
                                         <ul className='mt-4 space-y-3 text-sm text-white/70'>
-                                                {cart.map((item) => {
+                                                {displayItems.map((item) => {
                                                         const { price, discountedPrice, isDiscounted } = getProductPricing(item);
                                                         return (
-                                                                <li key={item._id} className='flex justify-between gap-4'>
+                                                                <li
+                                                                        key={item._id || item.id || item.productId || item.name}
+                                                                        className='flex justify-between gap-4'
+                                                                >
                                                                         <span className='font-medium text-white'>{item.name}</span>
                                                                         <span className='flex flex-col items-end'>
                                                                                 {isDiscounted && (
@@ -348,7 +293,7 @@ const CheckoutPage = () => {
                                         <div className='mt-6 space-y-2 border-t border-white/10 pt-4 text-sm text-white/70'>
                                                 <div className='flex justify-between'>
                                                         <span>{t("checkout.summary.subtotal")}</span>
-                                                        <span>{formatMRU(subtotal)}</span>
+                                                        <span>{formatMRU(displaySubtotal)}</span>
                                                 </div>
                                                 {savings > 0 && (
                                                         <div className='flex justify-between text-payzone-gold'>
@@ -358,7 +303,7 @@ const CheckoutPage = () => {
                                                 )}
                                                 <div className='flex justify-between text-base font-semibold text-white'>
                                                         <span>{t("checkout.summary.total")}</span>
-                                                        <span>{formatMRU(total)}</span>
+                                                        <span>{formatMRU(displayTotal)}</span>
                                                 </div>
                                         </div>
 

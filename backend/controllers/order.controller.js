@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { google } from "googleapis";
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import Coupon from "../models/coupon.model.js";
@@ -13,6 +14,16 @@ const ORDER_STATUS_OPTIONS = new Set([
         "delivered",
         "cancelled",
 ]);
+const SHEET_HEADERS = [
+        "Name",
+        "Phone",
+        "City",
+        "Product",
+        "Date",
+        "Status",
+        "TotalPrice",
+        "ItemsDetails",
+];
 
 const normalizeString = (value) => (typeof value === "string" ? value.trim() : "");
 const normalizePhone = (value) => (typeof value === "string" ? value.replaceAll(/\D/g, "") : "");
@@ -36,6 +47,102 @@ const computeUnitPrice = (product) => {
         const discountValue = price * (discountPercentage / 100);
         const discounted = price - discountValue;
         return Number(discounted.toFixed(2));
+};
+
+const buildSheetsClient = () => {
+        const { GOOGLE_PROJECT_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY } = process.env;
+        if (!GOOGLE_PROJECT_ID || !GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
+                throw new Error("Missing Google Sheets credentials");
+        }
+
+        const auth = new google.auth.JWT({
+                email: GOOGLE_CLIENT_EMAIL,
+                key: GOOGLE_PRIVATE_KEY.replaceAll("\\n", "\n"),
+                scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+        });
+
+        return google.sheets({ version: "v4", auth });
+};
+
+const resolveSheetName = async (sheetsClient, spreadsheetId) => {
+        const response = await sheetsClient.spreadsheets.get({
+                spreadsheetId,
+                fields: "sheets.properties.title",
+        });
+        const sheetTitles = response.data.sheets
+                ?.map((sheet) => sheet.properties?.title)
+                .filter(Boolean);
+        if (!sheetTitles?.length) {
+                throw new Error("No sheets found in spreadsheet");
+        }
+        return sheetTitles.includes("Sheet1") ? "Sheet1" : sheetTitles[0];
+};
+
+const ensureSheetHeaders = async (sheetsClient, spreadsheetId, sheetName) => {
+        const headerRange = `${sheetName}!1:1`;
+        const existing = await sheetsClient.spreadsheets.values.get({
+                spreadsheetId,
+                range: headerRange,
+        });
+        const existingHeaders = existing.data.values?.[0] || [];
+        const isHeaderMatch =
+                existingHeaders.length >= SHEET_HEADERS.length &&
+                SHEET_HEADERS.every((header, index) => existingHeaders[index] === header);
+        if (isHeaderMatch) {
+                return;
+        }
+
+        await sheetsClient.spreadsheets.values.update({
+                spreadsheetId,
+                range: `${sheetName}!A1`,
+                valueInputOption: "RAW",
+                requestBody: {
+                        values: [SHEET_HEADERS],
+                },
+        });
+};
+
+const formatItemsDetails = (items) =>
+        JSON.stringify(
+                items.map((item) => ({
+                        productName: item.name,
+                        quantity: item.quantity,
+                        unitPrice: Number(item.price) || 0,
+                        lineTotal: Number(item.subtotal) || 0,
+                }))
+        );
+
+const appendOrderToSheet = async ({ customerName, phone, address, items, total, status }) => {
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        if (!spreadsheetId) {
+                throw new Error("Missing Google Sheet ID");
+        }
+
+        const sheetsClient = buildSheetsClient();
+        const sheetName = await resolveSheetName(sheetsClient, spreadsheetId);
+        await ensureSheetHeaders(sheetsClient, spreadsheetId, sheetName);
+
+        const productSummary = items.map((item) => `${item.name} x${item.quantity}`).join(", ");
+        const rowValues = [
+                customerName,
+                phone,
+                address,
+                productSummary || "-",
+                new Date().toISOString(),
+                status,
+                Number(total) || 0,
+                formatItemsDetails(items),
+        ];
+
+        await sheetsClient.spreadsheets.values.append({
+                spreadsheetId,
+                range: `${sheetName}!A1`,
+                valueInputOption: "RAW",
+                insertDataOption: "INSERT_ROWS",
+                requestBody: {
+                        values: [rowValues],
+                },
+        });
 };
 
 
@@ -309,42 +416,61 @@ export const createWhatsAppOrder = async (req, res) => {
                         normalizedItems,
                         products
                 );
-const { total, totalDiscountAmount, appliedCoupon } = await calculateCouponTotals(
-payload.primaryCouponCode,
-subtotal
-);
+                const { total, totalDiscountAmount, appliedCoupon } = await calculateCouponTotals(
+                        payload.primaryCouponCode,
+                        subtotal
+                );
 
-const safeCustomerName = normalizeString(payload.customerName);
-const safePhone = normalizePhone(payload.phone);
-const safeAddress = normalizeString(payload.address);
+                if (!Number.isFinite(total) || total <= 0) {
+                        throw createHttpError(400, "Total price is required");
+                }
 
-const orderData = {
-items: itemsWithDetails,
-subtotal,
-total,
-coupon: appliedCoupon,
-totalDiscountAmount,
-customerName: safeCustomerName,
-phone: safePhone,
-address: safeAddress,
-paymentMethod: "whatsapp",
-status: "paid_whatsapp",
-paidAt: new Date(),
-optimisticPaid: true,
-reconciliationNeeded: true,
-createdFrom: "checkout_whatsapp",
-log: [
-{
-action: "created",
-statusAfter: "paid_whatsapp",
-reason: "Order captured via WhatsApp checkout",
-changedByName: "checkout_whatsapp",
-timestamp: new Date(),
-},
-],
-};
+                const safeCustomerName = normalizeString(payload.customerName);
+                const safePhone = normalizePhone(payload.phone);
+                const safeAddress = normalizeString(payload.address);
 
-const order = await Order.create(orderData);
+                const orderData = {
+                        items: itemsWithDetails,
+                        subtotal,
+                        total,
+                        coupon: appliedCoupon,
+                        totalDiscountAmount,
+                        customerName: safeCustomerName,
+                        phone: safePhone,
+                        address: safeAddress,
+                        paymentMethod: "whatsapp",
+                        status: "paid_whatsapp",
+                        paidAt: new Date(),
+                        optimisticPaid: true,
+                        reconciliationNeeded: true,
+                        createdFrom: "checkout_whatsapp",
+                        log: [
+                                {
+                                        action: "created",
+                                        statusAfter: "paid_whatsapp",
+                                        reason: "Order captured via WhatsApp checkout",
+                                        changedByName: "checkout_whatsapp",
+                                        timestamp: new Date(),
+                                },
+                        ],
+                };
+
+                const order = await Order.create(orderData);
+                let sheetLogged = false;
+
+                try {
+                        await appendOrderToSheet({
+                                customerName: safeCustomerName,
+                                phone: safePhone,
+                                address: safeAddress,
+                                items: itemsWithDetails,
+                                total,
+                                status: "NEW",
+                        });
+                        sheetLogged = true;
+                } catch (sheetError) {
+                        console.error("Failed to log order to Google Sheet", sheetError);
+                }
 
                 const orderForResponse = mapOrderResponse(order.toObject());
 
@@ -355,6 +481,7 @@ const order = await Order.create(orderData);
                         total: orderForResponse.total,
                         coupon: orderForResponse.coupon,
                         totalDiscountAmount: orderForResponse.totalDiscountAmount,
+                        sheetLogged,
                 });
         } catch (error) {
                 if (error.status) {
