@@ -14,14 +14,13 @@ const ORDER_STATUS_OPTIONS = new Set([
         "delivered",
         "cancelled",
 ]);
-const SHEET_HEADERS = [
-        "Name",
-        "Phone",
-        "City",
-        "Product",
-        "Date",
-        "Status",
-        "TotalPrice",
+const REQUIRED_SHEET_HEADERS = [
+        "ORDER_ID",
+        "DATE",
+        "NAME",
+        "NUMBER_PHONE",
+        "ADDRESS",
+        "PRODUCT",
 ];
 
 const normalizeString = (value) => (typeof value === "string" ? value.trim() : "");
@@ -63,69 +62,277 @@ const buildSheetsClient = () => {
         return google.sheets({ version: "v4", auth });
 };
 
-const resolveSheetName = async (sheetsClient, spreadsheetId) => {
+const resolveSheetInfo = async (sheetsClient, spreadsheetId) => {
         const response = await sheetsClient.spreadsheets.get({
                 spreadsheetId,
-                fields: "sheets.properties.title",
+                fields: "sheets.properties.sheetId,sheets.properties.title",
         });
-        const sheetTitles = response.data.sheets
-                ?.map((sheet) => sheet.properties?.title)
+        const sheets = response.data.sheets
+                ?.map((sheet) => sheet.properties)
                 .filter(Boolean);
-        if (!sheetTitles?.length) {
+        if (!sheets?.length) {
                 throw new Error("No sheets found in spreadsheet");
         }
-        return sheetTitles.includes("Sheet1") ? "Sheet1" : sheetTitles[0];
+        const defaultSheet =
+                sheets.find((sheet) => sheet.title === "Sheet1") || sheets[0];
+        return {
+                sheetId: defaultSheet.sheetId,
+                sheetName: defaultSheet.title,
+        };
 };
 
-const ensureSheetHeaders = async (sheetsClient, spreadsheetId, sheetName) => {
+const normalizeHeader = (value) =>
+        (typeof value === "string" ? value.trim().toUpperCase().replaceAll(/\s+/g, "_") : "");
+
+const HEADER_ALIASES = {
+        ORDER_ID: ["ORDER_ID", "ORDERID", "ORDER_ID"],
+        DATE: ["DATE"],
+        NAME: ["NAME"],
+        NUMBER_PHONE: ["NUMBER_PHONE", "PHONE", "PHONE_NUMBER", "NUMBERPHONE"],
+        ADDRESS: ["ADDRESS", "CITY", "ADDRESS_OR_CITY"],
+        PRODUCT: ["PRODUCT", "QUANTITY_SUMMARY", "PRODUCT_OR_QUANTITY_SUMMARY"],
+};
+
+const matchRequiredHeader = (value) => {
+        const normalized = normalizeHeader(value);
+        if (!normalized) {
+                return null;
+        }
+        return (
+                Object.keys(HEADER_ALIASES).find((key) =>
+                        HEADER_ALIASES[key].includes(normalized)
+                ) || null
+        );
+};
+
+const getUsedRangeSize = async (sheetsClient, spreadsheetId, sheetName) => {
+        const response = await sheetsClient.spreadsheets.values.get({
+                spreadsheetId,
+                range: sheetName,
+        });
+        const values = response.data.values || [];
+        const rowCount = Math.max(values.length, 1);
+        const columnCount = Math.max(
+                values.reduce((max, row) => Math.max(max, row.length), 0),
+                REQUIRED_SHEET_HEADERS.length
+        );
+        return { rowCount, columnCount };
+};
+
+const ensureSheetSchema = async (sheetsClient, spreadsheetId, sheetInfo) => {
+        const { sheetId, sheetName } = sheetInfo;
         const headerRange = `${sheetName}!1:1`;
         const existing = await sheetsClient.spreadsheets.values.get({
                 spreadsheetId,
                 range: headerRange,
         });
         const existingHeaders = existing.data.values?.[0] || [];
-        const isHeaderMatch =
-                existingHeaders.length >= SHEET_HEADERS.length &&
-                SHEET_HEADERS.every((header, index) => existingHeaders[index] === header);
-        if (isHeaderMatch) {
-                return;
+        const headerKeys = existingHeaders.map((header, index) => {
+                const match = matchRequiredHeader(header);
+                return match || `EXTRA_${index}`;
+        });
+
+        const requests = [];
+        let insertedColumns = 0;
+
+        if (!headerKeys.includes("ORDER_ID")) {
+                requests.push({
+                        insertDimension: {
+                                range: {
+                                        sheetId,
+                                        dimension: "COLUMNS",
+                                        startIndex: 0,
+                                        endIndex: 1,
+                                },
+                                inheritFromBefore: false,
+                        },
+                });
+                headerKeys.unshift("ORDER_ID");
+                insertedColumns += 1;
         }
 
-        await sheetsClient.spreadsheets.values.update({
-                spreadsheetId,
-                range: `${sheetName}!A1`,
-                valueInputOption: "RAW",
-                requestBody: {
-                        values: [SHEET_HEADERS],
+        REQUIRED_SHEET_HEADERS.forEach((headerKey, targetIndex) => {
+                let currentIndex = headerKeys.indexOf(headerKey);
+                if (currentIndex === -1) {
+                        requests.push({
+                                insertDimension: {
+                                        range: {
+                                                sheetId,
+                                                dimension: "COLUMNS",
+                                                startIndex: targetIndex,
+                                                endIndex: targetIndex + 1,
+                                        },
+                                        inheritFromBefore: false,
+                                },
+                        });
+                        headerKeys.splice(targetIndex, 0, headerKey);
+                        insertedColumns += 1;
+                        return;
+                }
+
+                if (currentIndex === targetIndex) {
+                        return;
+                }
+
+                requests.push({
+                        moveDimension: {
+                                source: {
+                                        sheetId,
+                                        dimension: "COLUMNS",
+                                        startIndex: currentIndex,
+                                        endIndex: currentIndex + 1,
+                                },
+                                destinationIndex: targetIndex,
+                        },
+                });
+                const [moved] = headerKeys.splice(currentIndex, 1);
+                headerKeys.splice(targetIndex, 0, moved);
+        });
+
+        const usedRange = await getUsedRangeSize(sheetsClient, spreadsheetId, sheetName);
+        const columnCount = usedRange.columnCount + insertedColumns;
+        const rowCount = usedRange.rowCount;
+
+        const headerFormat = {
+                textFormat: { bold: true },
+                backgroundColor: { red: 0, green: 0.6, blue: 0 },
+        };
+        requests.push({
+                repeatCell: {
+                        range: {
+                                sheetId,
+                                startRowIndex: 0,
+                                endRowIndex: 1,
+                                startColumnIndex: 0,
+                                endColumnIndex: columnCount,
+                        },
+                        cell: {
+                                userEnteredFormat: headerFormat,
+                        },
+                        fields: "userEnteredFormat(textFormat,backgroundColor)",
                 },
         });
+        requests.push({
+                updateCells: {
+                        range: {
+                                sheetId,
+                                startRowIndex: 0,
+                                endRowIndex: 1,
+                                startColumnIndex: 0,
+                                endColumnIndex: REQUIRED_SHEET_HEADERS.length,
+                        },
+                        rows: [
+                                {
+                                        values: REQUIRED_SHEET_HEADERS.map((header) => ({
+                                                userEnteredValue: { stringValue: header },
+                                                userEnteredFormat: headerFormat,
+                                        })),
+                                },
+                        ],
+                        fields: "userEnteredValue,userEnteredFormat(textFormat,backgroundColor)",
+                },
+        });
+
+        requests.push({
+                updateSheetProperties: {
+                        properties: {
+                                sheetId,
+                                gridProperties: {
+                                        frozenRowCount: 1,
+                                },
+                                rightToLeft: true,
+                        },
+                        fields: "gridProperties.frozenRowCount,rightToLeft",
+                },
+        });
+
+        requests.push({
+                repeatCell: {
+                        range: {
+                                sheetId,
+                                startRowIndex: 1,
+                                endRowIndex: rowCount,
+                                startColumnIndex: 1,
+                                endColumnIndex: 2,
+                        },
+                        cell: {
+                                userEnteredFormat: {
+                                        numberFormat: {
+                                                type: "DATE_TIME",
+                                                pattern: "yyyy-mm-dd hh:mm:ss",
+                                        },
+                                },
+                        },
+                        fields: "userEnteredFormat.numberFormat",
+                },
+        });
+
+        requests.push({
+                updateBorders: {
+                        range: {
+                                sheetId,
+                                startRowIndex: 0,
+                                endRowIndex: rowCount,
+                                startColumnIndex: 0,
+                                endColumnIndex: columnCount,
+                        },
+                        top: { style: "SOLID" },
+                        bottom: { style: "SOLID" },
+                        left: { style: "SOLID" },
+                        right: { style: "SOLID" },
+                        innerHorizontal: { style: "SOLID" },
+                        innerVertical: { style: "SOLID" },
+                },
+        });
+
+        requests.push({
+                autoResizeDimensions: {
+                        dimensions: {
+                                sheetId,
+                                dimension: "COLUMNS",
+                                startIndex: 0,
+                                endIndex: columnCount,
+                        },
+                },
+        });
+
+        if (requests.length) {
+                await sheetsClient.spreadsheets.batchUpdate({
+                        spreadsheetId,
+                        requestBody: { requests },
+                });
+        }
 };
 
-const appendOrderToSheet = async ({ customerName, phone, address, items, total, status }) => {
+const appendOrderToSheet = async ({ orderId, customerName, phone, address, items }) => {
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         if (!spreadsheetId) {
                 throw new Error("Missing Google Sheet ID");
         }
 
         const sheetsClient = buildSheetsClient();
-        const sheetName = await resolveSheetName(sheetsClient, spreadsheetId);
-        await ensureSheetHeaders(sheetsClient, spreadsheetId, sheetName);
+        const sheetInfo = await resolveSheetInfo(sheetsClient, spreadsheetId);
+        await ensureSheetSchema(sheetsClient, spreadsheetId, sheetInfo);
 
         const productSummary = items.map((item) => `${item.name} x${item.quantity}`).join(", ");
+        const formattedDate = new Date()
+                .toISOString()
+                .replace("T", " ")
+                .replace("Z", "")
+                .replace(".000", "");
         const rowValues = [
+                orderId,
+                formattedDate,
                 customerName,
                 phone,
                 address,
                 productSummary || "-",
-                new Date().toISOString(),
-                status,
-                Number(total) || 0,
         ];
 
         await sheetsClient.spreadsheets.values.append({
                 spreadsheetId,
-                range: `${sheetName}!A1`,
-                valueInputOption: "RAW",
+                range: `${sheetInfo.sheetName}!A1`,
+                valueInputOption: "USER_ENTERED",
                 insertDataOption: "INSERT_ROWS",
                 requestBody: {
                         values: [rowValues],
@@ -448,12 +655,11 @@ export const createWhatsAppOrder = async (req, res) => {
 
                 try {
                         await appendOrderToSheet({
+                                orderId: order.orderNumber || order._id?.toString?.() || order._id,
                                 customerName: safeCustomerName,
                                 phone: safePhone,
                                 address: safeAddress,
                                 items: itemsWithDetails,
-                                total,
-                                status: "NEW",
                         });
                         sheetLogged = true;
                 } catch (sheetError) {
