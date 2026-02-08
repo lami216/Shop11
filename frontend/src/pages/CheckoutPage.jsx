@@ -174,7 +174,7 @@ const CheckoutPage = () => {
         };
 
         return (
-                <div className='py-10'>
+                <div className='checkout-page py-10'>
                         <div className='mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 lg:flex-row'>
                                 <motion.section
                                         className='w-full rounded-xl border border-payzone-indigo/40 bg-white/5 p-6 shadow-lg backdrop-blur-sm'

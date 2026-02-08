@@ -62,3 +62,25 @@
         outline: 2px solid #fbbf24;
         outline-offset: 2px;
 }
+
+.cart-page,
+.checkout-page {
+        color: #111 !important;
+}
+
+.cart-page input,
+.cart-page select,
+.cart-page textarea,
+.checkout-page input,
+.checkout-page select,
+.checkout-page textarea {
+        color: #111 !important;
+}
+
+.cart-page input::placeholder,
+.cart-page textarea::placeholder,
+.checkout-page input::placeholder,
+.checkout-page textarea::placeholder {
+        color: #666 !important;
+        opacity: 1;
+}
