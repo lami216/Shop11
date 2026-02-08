@@ -124,6 +124,11 @@ const getUsedRangeSize = async (sheetsClient, spreadsheetId, sheetName) => {
         return { rowCount, columnCount };
 };
 
+const shouldStyleHeader = (headers = []) =>
+        REQUIRED_SHEET_HEADERS.every(
+                (header, index) => normalizeHeader(headers[index]) === header
+        );
+
 const ensureSheetSchema = async (sheetsClient, spreadsheetId, sheetInfo) => {
         const { sheetId, sheetName } = sheetInfo;
         const headerRange = `${sheetName}!1:1`;
@@ -194,6 +199,12 @@ const ensureSheetSchema = async (sheetsClient, spreadsheetId, sheetInfo) => {
                 headerKeys.splice(targetIndex, 0, moved);
         });
 
+        const applyHeaderStyling =
+                shouldStyleHeader(existingHeaders) ||
+                REQUIRED_SHEET_HEADERS.every(
+                        (headerKey, index) => headerKeys[index] === headerKey
+                );
+
         const usedRange = await getUsedRangeSize(sheetsClient, spreadsheetId, sheetName);
         const columnCount = usedRange.columnCount + insertedColumns;
         const rowCount = usedRange.rowCount;
@@ -202,21 +213,23 @@ const ensureSheetSchema = async (sheetsClient, spreadsheetId, sheetInfo) => {
                 textFormat: { bold: true },
                 backgroundColor: { red: 0, green: 0.6, blue: 0 },
         };
-        requests.push({
-                repeatCell: {
-                        range: {
-                                sheetId,
-                                startRowIndex: 0,
-                                endRowIndex: 1,
-                                startColumnIndex: 0,
-                                endColumnIndex: columnCount,
+        if (applyHeaderStyling) {
+                requests.push({
+                        repeatCell: {
+                                range: {
+                                        sheetId,
+                                        startRowIndex: 0,
+                                        endRowIndex: 1,
+                                        startColumnIndex: 0,
+                                        endColumnIndex: columnCount,
+                                },
+                                cell: {
+                                        userEnteredFormat: headerFormat,
+                                },
+                                fields: "userEnteredFormat(textFormat,backgroundColor)",
                         },
-                        cell: {
-                                userEnteredFormat: headerFormat,
-                        },
-                        fields: "userEnteredFormat(textFormat,backgroundColor)",
-                },
-        });
+                });
+        }
         requests.push({
                 updateCells: {
                         range: {
@@ -230,11 +243,15 @@ const ensureSheetSchema = async (sheetsClient, spreadsheetId, sheetInfo) => {
                                 {
                                         values: REQUIRED_SHEET_HEADERS.map((header) => ({
                                                 userEnteredValue: { stringValue: header },
-                                                userEnteredFormat: headerFormat,
+                                                userEnteredFormat: applyHeaderStyling
+                                                        ? headerFormat
+                                                        : undefined,
                                         })),
                                 },
                         ],
-                        fields: "userEnteredValue,userEnteredFormat(textFormat,backgroundColor)",
+                        fields: applyHeaderStyling
+                                ? "userEnteredValue,userEnteredFormat(textFormat,backgroundColor)"
+                                : "userEnteredValue",
                 },
         });
 
@@ -245,7 +262,7 @@ const ensureSheetSchema = async (sheetsClient, spreadsheetId, sheetInfo) => {
                                 gridProperties: {
                                         frozenRowCount: 1,
                                 },
-                                rightToLeft: true,
+                                rightToLeft: false,
                         },
                         fields: "gridProperties.frozenRowCount,rightToLeft",
                 },
@@ -272,23 +289,25 @@ const ensureSheetSchema = async (sheetsClient, spreadsheetId, sheetInfo) => {
                 },
         });
 
-        requests.push({
-                updateBorders: {
-                        range: {
-                                sheetId,
-                                startRowIndex: 0,
-                                endRowIndex: rowCount,
-                                startColumnIndex: 0,
-                                endColumnIndex: columnCount,
+        if (applyHeaderStyling) {
+                requests.push({
+                        updateBorders: {
+                                range: {
+                                        sheetId,
+                                        startRowIndex: 0,
+                                        endRowIndex: rowCount,
+                                        startColumnIndex: 0,
+                                        endColumnIndex: columnCount,
+                                },
+                                top: { style: "SOLID" },
+                                bottom: { style: "SOLID" },
+                                left: { style: "SOLID" },
+                                right: { style: "SOLID" },
+                                innerHorizontal: { style: "SOLID" },
+                                innerVertical: { style: "SOLID" },
                         },
-                        top: { style: "SOLID" },
-                        bottom: { style: "SOLID" },
-                        left: { style: "SOLID" },
-                        right: { style: "SOLID" },
-                        innerHorizontal: { style: "SOLID" },
-                        innerVertical: { style: "SOLID" },
-                },
-        });
+                });
+        }
 
         requests.push({
                 autoResizeDimensions: {
@@ -323,6 +342,18 @@ const calculateFallbackTotalPrice = (items, totalDiscountAmount) => {
         const discount = Math.max(0, Number(totalDiscountAmount) || 0);
         const total = Math.max(0, subtotal - discount);
         return Number(total.toFixed(2));
+};
+
+const extractRowIndexFromRange = (range) => {
+        if (typeof range !== "string") {
+                return null;
+        }
+        const match = range.match(/!(?:[A-Z]+)(\d+)/);
+        if (!match) {
+                return null;
+        }
+        const rowIndex = Number.parseInt(match[1], 10);
+        return Number.isNaN(rowIndex) ? null : rowIndex;
 };
 
 const appendOrderToSheet = async ({
@@ -390,7 +421,7 @@ const appendOrderToSheet = async ({
                 });
         }
 
-        await sheetsClient.spreadsheets.values.append({
+        const appendResponse = await sheetsClient.spreadsheets.values.append({
                 spreadsheetId,
                 range: `${sheetInfo.sheetName}!A1`,
                 valueInputOption: "USER_ENTERED",
@@ -399,6 +430,72 @@ const appendOrderToSheet = async ({
                         values: [rowValues],
                 },
         });
+
+        const updatedRange = appendResponse?.data?.updates?.updatedRange;
+        const rowIndex = extractRowIndexFromRange(updatedRange);
+        if (!rowIndex) {
+                console.warn("Unable to resolve appended row index for sheet borders", {
+                        updatedRange,
+                        orderId,
+                });
+                return;
+        }
+
+        try {
+                await sheetsClient.spreadsheets.batchUpdate({
+                        spreadsheetId,
+                        requestBody: {
+                                requests: [
+                                        {
+                                                updateBorders: {
+                                                        range: {
+                                                                sheetId: sheetInfo.sheetId,
+                                                                startRowIndex: rowIndex - 1,
+                                                                endRowIndex: rowIndex,
+                                                                startColumnIndex: 0,
+                                                                endColumnIndex: REQUIRED_SHEET_HEADERS.length,
+                                                        },
+                                                        top: {
+                                                                style: "SOLID",
+                                                                width: 1,
+                                                                color: { red: 0, green: 0, blue: 0 },
+                                                        },
+                                                        bottom: {
+                                                                style: "SOLID",
+                                                                width: 1,
+                                                                color: { red: 0, green: 0, blue: 0 },
+                                                        },
+                                                        left: {
+                                                                style: "SOLID",
+                                                                width: 1,
+                                                                color: { red: 0, green: 0, blue: 0 },
+                                                        },
+                                                        right: {
+                                                                style: "SOLID",
+                                                                width: 1,
+                                                                color: { red: 0, green: 0, blue: 0 },
+                                                        },
+                                                        innerHorizontal: {
+                                                                style: "SOLID",
+                                                                width: 1,
+                                                                color: { red: 0, green: 0, blue: 0 },
+                                                        },
+                                                        innerVertical: {
+                                                                style: "SOLID",
+                                                                width: 1,
+                                                                color: { red: 0, green: 0, blue: 0 },
+                                                        },
+                                                },
+                                        },
+                                ],
+                        },
+                });
+        } catch (error) {
+                console.error("Failed to apply borders to appended sheet row", {
+                        orderId,
+                        error: error?.message || error,
+                });
+        }
 };
 
 
