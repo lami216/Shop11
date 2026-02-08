@@ -21,7 +21,10 @@ const REQUIRED_SHEET_HEADERS = [
         "NUMBER_PHONE",
         "ADDRESS",
         "PRODUCT",
+        "STATUS",
+        "TOTAL_PRICE",
 ];
+const DEFAULT_SHEET_STATUS = "NEW";
 
 const normalizeString = (value) => (typeof value === "string" ? value.trim() : "");
 const normalizePhone = (value) => (typeof value === "string" ? value.replaceAll(/\D/g, "") : "");
@@ -91,6 +94,8 @@ const HEADER_ALIASES = {
         NUMBER_PHONE: ["NUMBER_PHONE", "PHONE", "PHONE_NUMBER", "NUMBERPHONE"],
         ADDRESS: ["ADDRESS", "CITY", "ADDRESS_OR_CITY"],
         PRODUCT: ["PRODUCT", "QUANTITY_SUMMARY", "PRODUCT_OR_QUANTITY_SUMMARY"],
+        STATUS: ["STATUS", "ORDER_STATUS"],
+        TOTAL_PRICE: ["TOTAL_PRICE", "TOTAL", "ORDER_TOTAL"],
 };
 
 const matchRequiredHeader = (value) => {
@@ -304,7 +309,32 @@ const ensureSheetSchema = async (sheetsClient, spreadsheetId, sheetInfo) => {
         }
 };
 
-const appendOrderToSheet = async ({ orderId, customerName, phone, address, items }) => {
+const calculateFallbackTotalPrice = (items, totalDiscountAmount) => {
+        const safeItems = Array.isArray(items) ? items : [];
+        const subtotal = safeItems.reduce((sum, item) => {
+                const lineSubtotal = Number(item?.subtotal);
+                if (Number.isFinite(lineSubtotal)) {
+                        return sum + lineSubtotal;
+                }
+                const unitPrice = Number(item?.price) || 0;
+                const quantity = Number(item?.quantity) || 0;
+                return sum + unitPrice * quantity;
+        }, 0);
+        const discount = Math.max(0, Number(totalDiscountAmount) || 0);
+        const total = Math.max(0, subtotal - discount);
+        return Number(total.toFixed(2));
+};
+
+const appendOrderToSheet = async ({
+        orderId,
+        customerName,
+        phone,
+        address,
+        items,
+        status,
+        totalPrice,
+        totalDiscountAmount,
+}) => {
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         if (!spreadsheetId) {
                 throw new Error("Missing Google Sheet ID");
@@ -314,12 +344,33 @@ const appendOrderToSheet = async ({ orderId, customerName, phone, address, items
         const sheetInfo = await resolveSheetInfo(sheetsClient, spreadsheetId);
         await ensureSheetSchema(sheetsClient, spreadsheetId, sheetInfo);
 
-        const productSummary = items.map((item) => `${item.name} x${item.quantity}`).join(", ");
+        const safeItems = Array.isArray(items) ? items : [];
+        const productSummary = safeItems
+                .map((item) => `${item.name} x${item.quantity}`)
+                .join(", ");
         const formattedDate = new Date()
                 .toISOString()
                 .replace("T", " ")
                 .replace("Z", "")
                 .replace(".000", "");
+        const normalizedStatus = normalizeString(status).toUpperCase();
+        const statusValue = ["NEW", "PENDING"].includes(normalizedStatus)
+                ? normalizedStatus
+                : DEFAULT_SHEET_STATUS;
+        let resolvedTotalPrice = Number(totalPrice);
+        if (!Number.isFinite(resolvedTotalPrice)) {
+                console.warn("Missing total price for sheet append, falling back to computed total", {
+                        orderId,
+                });
+                resolvedTotalPrice = calculateFallbackTotalPrice(safeItems, totalDiscountAmount);
+        }
+        if (!Number.isFinite(resolvedTotalPrice)) {
+                console.error("Unable to resolve total price for sheet append, defaulting to 0", {
+                        orderId,
+                });
+                resolvedTotalPrice = 0;
+        }
+
         const rowValues = [
                 orderId,
                 formattedDate,
@@ -327,7 +378,17 @@ const appendOrderToSheet = async ({ orderId, customerName, phone, address, items
                 phone,
                 address,
                 productSummary || "-",
+                statusValue || DEFAULT_SHEET_STATUS,
+                resolvedTotalPrice,
         ];
+
+        if (process.env.NODE_ENV !== "production") {
+                console.log("Appending order row to Google Sheet", {
+                        rowValues,
+                        status: statusValue || DEFAULT_SHEET_STATUS,
+                        totalPrice: resolvedTotalPrice,
+                });
+        }
 
         await sheetsClient.spreadsheets.values.append({
                 spreadsheetId,
@@ -660,6 +721,9 @@ export const createWhatsAppOrder = async (req, res) => {
                                 phone: safePhone,
                                 address: safeAddress,
                                 items: itemsWithDetails,
+                                status: order.status,
+                                totalPrice: order.total,
+                                totalDiscountAmount: order.totalDiscountAmount,
                         });
                         sheetLogged = true;
                 } catch (sheetError) {
