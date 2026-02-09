@@ -44,13 +44,12 @@ const ProductsList = ({ onEdit }) => {
                                 <thead className='bg-payzone-navy/80'>
                                         <tr>
                                                 {[ 
-                                                        t("admin.productsTable.headers.product"),
-                                                        t("admin.productsTable.headers.price"),
-                                                        t("admin.productsTable.headers.discount"),
-                                                        t("admin.productsTable.headers.category"),
-                                                        t("admin.productsTable.headers.featured"),
-                                                        t("admin.productsTable.headers.actions"),
-                                                ].map((heading) => (
+                                                t("admin.productsTable.headers.product"),
+                                                t("admin.productsTable.headers.price"),
+                                                t("admin.productsTable.headers.discount"),
+                                                t("admin.productsTable.headers.featured"),
+                                                t("admin.productsTable.headers.actions"),
+                                        ].map((heading) => (
                                                         <th
                                                                 key={heading}
                                                                 scope='col'
@@ -101,9 +100,6 @@ const ProductsList = ({ onEdit }) => {
                                                                 ) : (
                                                                         <span className='text-sm text-black'>—</span>
                                                                 )}
-                                                        </td>
-                                                        <td className='whitespace-nowrap px-6 py-4'>
-                                                                <div className='text-sm text-black'>{product.category}</div>
                                                         </td>
                                                         <td className='whitespace-nowrap px-6 py-4'>
                                                                 <button

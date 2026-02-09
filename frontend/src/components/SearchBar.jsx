@@ -1,17 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Grid3x3, Loader2, Search as SearchIcon, X } from "lucide-react";
+import { Loader2, Search as SearchIcon, X } from "lucide-react";
 
 import useTranslation from "../hooks/useTranslation";
 import { formatMRU } from "../lib/formatMRU";
 import { getProductPricing } from "../lib/getProductPricing";
-import { useCategoryStore } from "../stores/useCategoryStore";
 import { useSearchStore } from "../stores/useSearchStore";
 
-const SearchBar = ({ variant = "global", categorySlug = null }) => {
+const SearchBar = ({ variant = "global" }) => {
         const [showResults, setShowResults] = useState(false);
-        const [showCategories, setShowCategories] = useState(false);
 
         const {
                 query,
@@ -21,8 +19,6 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                 error,
                 searchProducts,
                 clearResults,
-                category: selectedCategory,
-                setCategory,
                 cancelOngoing,
         } = useSearchStore((state) => ({
                 query: state.query,
@@ -32,12 +28,9 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                 error: state.error,
                 searchProducts: state.searchProducts,
                 clearResults: state.clearResults,
-                category: state.category,
-                setCategory: state.setCategory,
                 cancelOngoing: state.cancelOngoing,
         }));
 
-        const { categories, fetchCategories, loading: categoriesLoading } = useCategoryStore();
         const { t } = useTranslation();
         const navigate = useNavigate();
         const location = useLocation();
@@ -45,18 +38,14 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
         const wrapperRef = useRef(null);
         const inputRef = useRef(null);
         const debounceTimeoutRef = useRef(null);
-        const fetchedCategoriesRef = useRef(false);
 
         const supportsOverlay = variant === "global";
         const isSearchRoute = useMemo(() => location.pathname.startsWith("/search"), [location.pathname]);
 
-        const buildQueryString = useCallback((term, categoryValue) => {
+        const buildQueryString = useCallback((term) => {
                 const entries = [];
                 if (term) {
                         entries.push(`q=${encodeURIComponent(term)}`);
-                }
-                if (categoryValue) {
-                        entries.push(`category=${encodeURIComponent(categoryValue)}`);
                 }
                 return entries.join("&");
         }, []);
@@ -71,21 +60,9 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
         );
 
         useEffect(() => {
-                if (variant === "category") {
-                        setCategory(categorySlug || null);
-                        return;
-                }
-
-                if (variant === "global") {
-                        setCategory(null);
-                }
-        }, [variant, categorySlug, setCategory]);
-
-        useEffect(() => {
                 const handleOutsideClick = (event) => {
                         if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
                                 setShowResults(false);
-                                setShowCategories(false);
                         }
                 };
 
@@ -100,7 +77,6 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                 const handleKeyDown = (event) => {
                         if (event.key === "Escape") {
                                 setShowResults(false);
-                                setShowCategories(false);
                         }
                 };
 
@@ -124,14 +100,13 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
         const handleSearch = useCallback(
                 async ({
                         searchValue,
-                        shouldNavigate = variant !== "category",
+                        shouldNavigate = true,
                         replace = variant !== "global",
                 } = {}) => {
                         const valueFromField = searchValue ?? inputRef.current?.value ?? "";
                         const trimmedValue = valueFromField.trim();
-                        const hasCategory = Boolean(selectedCategory);
 
-                        if (!trimmedValue && !hasCategory) {
+                        if (!trimmedValue) {
                                 clearResults();
                                 setShowResults(false);
                                 applySearchParams("", { replace });
@@ -144,7 +119,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                 return;
                         }
 
-                        const queryString = buildQueryString(trimmedValue, hasCategory ? selectedCategory : null);
+                        const queryString = buildQueryString(trimmedValue);
 
                         applySearchParams(queryString, { replace });
 
@@ -158,7 +133,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                 );
                         }
 
-                        await searchProducts({ query: trimmedValue, category: selectedCategory });
+                        await searchProducts({ query: trimmedValue });
 
                         if (supportsOverlay) {
                                 setShowResults(true);
@@ -170,7 +145,6 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                         clearResults,
                         navigate,
                         searchProducts,
-                        selectedCategory,
                         supportsOverlay,
                         variant,
                 ]
@@ -178,7 +152,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
 
         useEffect(() => {
                 const trimmed = query.trim();
-                const shouldSearch = Boolean(trimmed) || (selectedCategory && variant === "search");
+                const shouldSearch = Boolean(trimmed);
 
                 if (debounceTimeoutRef.current) {
                         clearTimeout(debounceTimeoutRef.current);
@@ -211,7 +185,6 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                 };
         }, [
                 query,
-                selectedCategory,
                 variant,
                 supportsOverlay,
                 handleSearch,
@@ -228,7 +201,7 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
 
                 handleSearch({
                         searchValue: inputRef.current?.value ?? query,
-                        shouldNavigate: variant !== "category",
+                        shouldNavigate: true,
                         replace: variant !== "global",
                 });
         };
@@ -240,103 +213,8 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                 setShowResults(false);
         };
 
-        const handleClearCategorySelection = useCallback(() => {
-                setCategory(null);
-                setShowCategories(false);
-
-                const trimmed = (inputRef.current?.value ?? query).trim();
-
-                if (trimmed) {
-                        handleSearch({
-                                searchValue: trimmed,
-                                shouldNavigate: variant !== "category",
-                                replace: true,
-                        });
-                        return;
-                }
-
-                clearResults();
-                if (supportsOverlay) {
-                        setShowResults(false);
-                }
-
-                applySearchParams("", { replace: true });
-
-                if (variant === "search") {
-                        navigate(
-                                { pathname: "/search", search: "" },
-                                { replace: true }
-                        );
-                } else if (variant === "category") {
-                        navigate("/search");
-                }
-        }, [
-                applySearchParams,
-                clearResults,
-                handleSearch,
-                navigate,
-                query,
-                setCategory,
-                supportsOverlay,
-                variant,
-        ]);
-
-        const handleSelectCategory = useCallback(
-                (category) => {
-                        const slug = category?.slug;
-
-                        if (!slug) {
-                                handleClearCategorySelection();
-                                return;
-                        }
-
-                        setCategory(slug);
-                        setShowCategories(false);
-
-                        const trimmed = (inputRef.current?.value ?? query).trim();
-
-                        if (trimmed) {
-                                handleSearch({
-                                        searchValue: trimmed,
-                                        shouldNavigate: variant !== "category",
-                                        replace: true,
-                                });
-                                return;
-                        }
-
-                        if (variant === "search") {
-                                handleSearch({
-                                        searchValue: "",
-                                        shouldNavigate: true,
-                                        replace: true,
-                                });
-                                return;
-                        }
-
-                        navigate(`/category/${slug}`);
-                },
-                [handleClearCategorySelection, handleSearch, navigate, query, setCategory, variant]
-        );
-
-        const handleToggleCategories = () => {
-                setShowCategories((previous) => {
-                        const next = !previous;
-                        if (next && !fetchedCategoriesRef.current) {
-                                if (!categories.length && !categoriesLoading) {
-                                        fetchCategories();
-                                }
-                                fetchedCategoriesRef.current = true;
-                        }
-                        return next;
-                });
-                if (supportsOverlay) {
-                        setShowResults(false);
-                }
-        };
-
         const handleChange = (event) => {
                 setQuery(event.target.value);
-                setShowCategories(false);
         };
 
         const handleClear = () => {
@@ -351,14 +229,6 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                         );
                 }
         };
-
-        const activeCategoryName = useMemo(() => {
-                if (!selectedCategory) {
-                        return "";
-                }
-                const match = categories.find((item) => item.slug === selectedCategory);
-                return match?.name ?? "";
-        }, [categories, selectedCategory]);
 
         return (
                 <div ref={wrapperRef} className='mx-auto flex w-full max-w-4xl flex-col gap-3'>
@@ -402,18 +272,6 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                                                 <SearchIcon className='h-5 w-5' />
                                                         )}
                                                         <span>{t("search.action")}</span>
-                                                </button>
-                                                <button
-                                                        type='button'
-                                                        onClick={handleToggleCategories}
-                                                        className='flex items-center gap-2 rounded-2xl border border-payzone-indigo/40 bg-payzone-navy/70 px-5 py-3 text-sm font-semibold text-payzone-gold transition hover:border-payzone-gold/60 hover:text-black'
-                                                >
-                                                        <Grid3x3 className='h-5 w-5' />
-                                                        <span>
-                                                                {activeCategoryName
-                                                                        ? `${t("search.categories")} · ${activeCategoryName}`
-                                                                        : t("search.categories")}
-                                                        </span>
                                                 </button>
                                         </div>
                                 </div>
@@ -497,49 +355,6 @@ const SearchBar = ({ variant = "global", categorySlug = null }) => {
                                 </div>
                         )}
 
-                        {showCategories && (
-                                <div className='rounded-3xl border border-white/10 bg-payzone-navy p-4 shadow-2xl'>
-                                        <div className='mb-3 flex items-center justify-between text-sm font-semibold text-payzone-gold'>
-                                                <span>{t("search.categoriesTitle")}</span>
-                                                {categoriesLoading && (
-                                                        <Loader2 className='h-4 w-4 animate-spin text-payzone-indigo' />
-                                                )}
-                                        </div>
-
-                                        {!categoriesLoading && categories.length === 0 && (
-                                                <div className='rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-black'>
-                                                        {t("search.categoriesEmpty")}
-                                                </div>
-                                        )}
-
-                                        {categories.length > 0 && (
-                                                <ul className='flex max-h-80 flex-col gap-2 overflow-y-auto pr-1'>
-                                                        {variant !== "category" && selectedCategory && (
-                                                                <li>
-                                                                        <button
-                                                                                type='button'
-                                                                                onClick={handleClearCategorySelection}
-                                                                                className='flex w-full items-center justify-between gap-3 rounded-2xl border border-transparent bg-white/10 p-4 text-sm font-semibold text-payzone-gold transition hover:border-payzone-gold/60 hover:bg-white/20'
-                                                                        >
-                                                                                <span>{t("search.clearCategory")}</span>
-                                                                        </button>
-                                                                </li>
-                                                        )}
-                                                        {categories.map((category) => (
-                                                                <li key={category._id}>
-                                                                        <button
-                                                                                type='button'
-                                                                                onClick={() => handleSelectCategory(category)}
-                                                                                className='flex w-full items-center justify-between gap-3 rounded-2xl border border-transparent bg-white/5 p-4 text-sm font-semibold text-black transition hover:border-payzone-gold/50 hover:bg-white/10'
-                                                                        >
-                                                                                <span>{category.name}</span>
-                                                                        </button>
-                                                                </li>
-                                                        ))}
-                                                </ul>
-                                        )}
-                                </div>
-                        )}
                 </div>
         );
 };
@@ -548,5 +363,4 @@ export default SearchBar;
 
 SearchBar.propTypes = {
         variant: PropTypes.string,
-        categorySlug: PropTypes.string,
 };

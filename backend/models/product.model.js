@@ -42,7 +42,7 @@ const productSchema = new mongoose.Schema(
                 },
                 category: {
                         type: String,
-                        required: true,
+                        default: "uncategorized",
                 },
                 categorySlug: {
                         type: String,
