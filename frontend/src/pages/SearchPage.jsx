@@ -10,29 +10,25 @@ import { useSearchStore } from "../stores/useSearchStore";
 const SearchPage = () => {
         const [searchParams] = useSearchParams();
         const { t } = useTranslation();
-        const { query, setQuery, results, loading, error, category, setCategory } = useSearchStore(
+        const { query, setQuery, results, loading, error } = useSearchStore(
                 (state) => ({
                         query: state.query,
                         setQuery: state.setQuery,
                         results: state.results,
                         loading: state.loading,
                         error: state.error,
-                        category: state.category,
-                        setCategory: state.setCategory,
                 })
         );
 
         useEffect(() => {
                 const nextQuery = searchParams.get("q") ?? "";
-                const nextCategory = searchParams.get("category");
 
                 setQuery(nextQuery);
-                setCategory(nextCategory || null);
-        }, [searchParams, setQuery, setCategory]);
+        }, [searchParams, setQuery]);
 
         const hasSearched = useMemo(() => {
-                return Boolean(query.trim() || category);
-        }, [query, category]);
+                return Boolean(query.trim());
+        }, [query]);
 
         return (
                 <div className='min-h-screen'>
