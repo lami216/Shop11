@@ -56,10 +56,10 @@ const HomePage = () => {
                                                 <p className='mb-8 text-right text-lg text-black'>
                                                         {t("home.subtitle")}
                                                 </p>
-                                                <div className='flex flex-wrap items-center justify-end gap-4'>
+                                                <div className='flex flex-wrap items-center justify-center gap-4 sm:justify-end'>
                                                         <a
                                                                 href='#products'
-                                                                className='inline-flex items-center gap-2 rounded-full bg-payzone-gold px-6 py-3 text-base font-semibold text-black shadow-lg transition hover:bg-[#b81f1f]'
+                                                                className='inline-flex w-full max-w-[320px] items-center justify-center gap-2 rounded-full bg-payzone-gold px-6 py-3 text-base font-semibold text-black shadow-lg transition hover:bg-[#b81f1f] sm:w-auto sm:max-w-none'
                                                         >
                                                                 {t("home.ctaPrimary")}
                                                                 <ArrowDownRight className='h-5 w-5' />
@@ -68,43 +68,52 @@ const HomePage = () => {
                                         </div>
 
                                         <div className='grid gap-4 sm:grid-cols-2'>
-                                                <div className='relative overflow-hidden rounded-3xl border border-payzone-indigo/30 bg-white/10 shadow-lg'>
+                                                <a
+                                                        href='#products'
+                                                        className='group relative block cursor-pointer overflow-hidden rounded-3xl border border-payzone-indigo/30 bg-white/10 shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-[0.99]'
+                                                >
                                                         <img
                                                                 src='https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=900&q=80'
                                                                 alt={t("home.heroImages.obd")}
-                                                                className='h-56 w-full object-cover sm:h-64'
+                                                                className='h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-64'
                                                                 loading='lazy'
                                                                 decoding='async'
                                                         />
                                                         <span className='absolute bottom-3 right-3 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-black'>
                                                                 {t("home.heroLabels.diagnostic")}
                                                         </span>
-                                                </div>
+                                                </a>
                                                 <div className='grid gap-4'>
-                                                        <div className='relative overflow-hidden rounded-3xl border border-payzone-indigo/30 bg-white/10 shadow-lg'>
+                                                        <a
+                                                                href='#products'
+                                                                className='group relative block cursor-pointer overflow-hidden rounded-3xl border border-payzone-indigo/30 bg-white/10 shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-[0.99]'
+                                                        >
                                                                 <img
                                                                         src='https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80'
                                                                         alt={t("home.heroImages.seatCover")}
-                                                                        className='h-32 w-full object-cover sm:h-40'
+                                                                        className='h-32 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-40'
                                                                         loading='lazy'
                                                                         decoding='async'
                                                                 />
                                                                 <span className='absolute bottom-3 right-3 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-black'>
                                                                         {t("home.heroLabels.comfort")}
                                                                 </span>
-                                                        </div>
-                                                        <div className='relative overflow-hidden rounded-3xl border border-payzone-indigo/30 bg-white/10 shadow-lg'>
+                                                        </a>
+                                                        <a
+                                                                href='#products'
+                                                                className='group relative block cursor-pointer overflow-hidden rounded-3xl border border-payzone-indigo/30 bg-white/10 shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-[0.99]'
+                                                        >
                                                                 <img
-                                                                        src='https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=900&q=80'
+                                                                        src='https://images.unsplash.com/photo-1514316454349-750a7fd3da3a?auto=format&fit=crop&w=900&q=80'
                                                                         alt={t("home.heroImages.interior")}
-                                                                        className='h-32 w-full object-cover sm:h-40'
+                                                                        className='h-32 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-40'
                                                                         loading='lazy'
                                                                         decoding='async'
                                                                 />
                                                                 <span className='absolute bottom-3 right-3 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-black'>
                                                                         {t("home.heroLabels.interior")}
                                                                 </span>
-                                                        </div>
+                                                        </a>
                                                 </div>
                                         </div>
                                 </div>
