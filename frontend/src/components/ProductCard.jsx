@@ -76,19 +76,18 @@ const ProductCard = ({ product }) => {
                                         {isDiscounted ? (
                                                 <>
                                                         <span className='max-w-full break-words text-sm text-black/60 line-through'>
-                                                                {formatMRU(price)}
+                                                                {formatMRU(price, { roundToInteger: true })}
                                                         </span>
                                                         <span className='max-w-full break-words text-2xl font-extrabold leading-none text-red-600'>
-                                                                {formatMRU(discountedPrice)}
+                                                                {formatMRU(discountedPrice, { roundToInteger: true })}
                                                         </span>
                                                 </>
                                         ) : (
                                                 <span className='max-w-full break-words text-2xl font-extrabold leading-none text-payzone-gold'>
-                                                        {formatMRU(price)}
+                                                        {formatMRU(price, { roundToInteger: true })}
                                                 </span>
                                         )}
                                 </div>
-                                <p className='mt-2 text-xs font-medium text-black/70'>توصيل سريع داخل موريتانيا</p>
                                 <button
                                         className='mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-payzone-gold px-5 py-2.5 text-sm font-semibold text-black shadow-md transition-all duration-300 hover:bg-[#b81f1f] hover:text-white focus:outline-none focus:ring-4 focus:ring-payzone-indigo/40'
                                         onClick={handleAddToCart}
