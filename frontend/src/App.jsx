@@ -20,6 +20,7 @@ import PurchaseSuccessPage from "./pages/PurchaseSuccessPage";
 import PurchaseCancelPage from "./pages/PurchaseCancelPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
         const user = useUserStore((state) => state.user);
@@ -50,6 +51,7 @@ function App() {
                 <div className='relative min-h-screen bg-gradient-to-b from-payzone-navy via-white to-bilady-yellow/20 text-black'>
                         <div className='relative z-50 pt-24 sm:pt-20'>
                                 <Navbar />
+                                <ScrollToTop />
                                 <Routes>
                                         <Route path='/' element={<HomePage />} />
                                         <Route path='/signup' element={!user ? <SignUpPage /> : <Navigate to='/' />} />
