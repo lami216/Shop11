@@ -33,20 +33,20 @@ const ProductCard = ({ product }) => {
         };
 
         return (
-                <div className='group relative flex w-full flex-col overflow-hidden rounded-xl border border-payzone-indigo/30 shadow-lg transition-all duration-300 hover:border-payzone-gold/60 hover:shadow-xl sm:aspect-[3/4] lg:aspect-square'>
+                <div className='group relative flex w-full flex-col overflow-hidden rounded-2xl border border-payzone-indigo/25 bg-white/95 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-payzone-gold/60 hover:shadow-xl'>
                         <Link
                                 to={`/products/${product._id}`}
-                                className='relative aspect-[4/5] w-full overflow-hidden min-h-[14rem] sm:min-h-0 sm:aspect-square'
+                                className='relative m-3 mb-0 aspect-[4/3] w-auto overflow-hidden rounded-xl bg-payzone-indigo/5 shadow-sm'
                                 aria-label={t("product.viewDetails", { name: product.name })}
                         >
                                 {isDiscounted && (
-                                        <span className='absolute right-3 top-3 z-10 rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white shadow-lg'>
+                                        <span className='absolute right-3 top-3 z-10 rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white shadow-lg'>
                                                 -{discountPercentage}%
                                         </span>
                                 )}
                                 {coverImage ? (
                                         <img
-                                                className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-110'
+                                                className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
                                                 src={coverImage}
                                                 alt={product.name}
                                                 style={{ filter: "none", opacity: 1, mixBlendMode: "normal" }}
@@ -58,26 +58,39 @@ const ProductCard = ({ product }) => {
                                 )}
                         </Link>
 
-                        <div className='mt-4 flex flex-1 flex-col px-5 pb-5'>
+                        <div className='mt-4 flex flex-1 flex-col px-4 pb-4 text-right'>
                                 <Link to={`/products/${product._id}`} className='block'>
-                                        <h5 className='text-lg font-semibold tracking-tight' style={{ color: "#000000" }}>
+                                        <h5
+                                                className='min-h-[3.4rem] text-base font-bold leading-7 tracking-tight text-black sm:text-lg'
+                                                style={{
+                                                        display: "-webkit-box",
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: "vertical",
+                                                        overflow: "hidden",
+                                                }}
+                                        >
                                                 {product.name}
                                         </h5>
                                 </Link>
-                                <div className='mt-3 flex flex-wrap items-baseline gap-2'>
+                                <div className='mt-3 flex flex-wrap items-baseline justify-end gap-2'>
                                         {isDiscounted ? (
                                                 <>
-                                                        <span className='max-w-full break-words text-sm text-black line-through'>{formatMRU(price)}</span>
-                                                        <span className='max-w-full break-words text-lg font-bold text-red-300'>{formatMRU(discountedPrice)}</span>
+                                                        <span className='max-w-full break-words text-sm text-black/60 line-through'>
+                                                                {formatMRU(price)}
+                                                        </span>
+                                                        <span className='max-w-full break-words text-2xl font-extrabold leading-none text-red-600'>
+                                                                {formatMRU(discountedPrice)}
+                                                        </span>
                                                 </>
                                         ) : (
-                                                <span className='max-w-full break-words text-lg font-semibold leading-tight text-payzone-gold'>
+                                                <span className='max-w-full break-words text-2xl font-extrabold leading-none text-payzone-gold'>
                                                         {formatMRU(price)}
                                                 </span>
                                         )}
                                 </div>
+                                <p className='mt-2 text-xs font-medium text-black/70'>توصيل سريع داخل موريتانيا</p>
                                 <button
-                                        className='mt-auto flex items-center justify-center gap-2 rounded-lg bg-payzone-gold px-5 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-[#b81f1f] focus:outline-none focus:ring-4 focus:ring-payzone-indigo/40'
+                                        className='mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-payzone-gold px-5 py-2.5 text-sm font-semibold text-black shadow-md transition-all duration-300 hover:bg-[#b81f1f] hover:text-white focus:outline-none focus:ring-4 focus:ring-payzone-indigo/40'
                                         onClick={handleAddToCart}
                                 >
                                         <ShoppingCart size={20} />
